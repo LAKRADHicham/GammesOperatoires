@@ -3,17 +3,9 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from "axios";
 
-/* ============================================================
-   CONFIGURATION
-   ============================================================ */
-
 const API_URL =
   import.meta.env.VITE_API_URL ||
   "/api";
-
-/* ============================================================
-   INSTANCE AXIOS
-   ============================================================ */
 
 const api = axios.create({
   baseURL: API_URL,
@@ -23,15 +15,13 @@ const api = axios.create({
 });
 
 /* ============================================================
-   REQUÊTES
+   AJOUT ACCESS TOKEN
    ============================================================ */
 
 api.interceptors.request.use(
-  (
-    config: InternalAxiosRequestConfig
-  ) => {
+  (config: InternalAxiosRequestConfig) => {
     const accessToken =
-      localStorage.getItem("access_token");
+      sessionStorage.getItem("access_token");
 
     if (accessToken) {
       config.headers.Authorization =
@@ -44,28 +34,20 @@ api.interceptors.request.use(
 );
 
 /* ============================================================
-   ÉTAT DU REFRESH
+   REFRESH
    ============================================================ */
 
 let refreshPromise: Promise<string | null> | null = null;
 
-/* ============================================================
-   RENOUVELLEMENT DU TOKEN
-   ============================================================ */
-
 async function performRefresh(): Promise<string | null> {
   const refreshToken =
-    localStorage.getItem("refresh_token");
+    sessionStorage.getItem("refresh_token");
 
   if (!refreshToken) {
     return null;
   }
 
   try {
-    /*
-     * axios est utilisé directement ici et non "api"
-     * afin d'éviter une boucle dans l'interceptor.
-     */
     const response = await axios.post<{
       access: string;
       refresh?: string;
@@ -81,24 +63,19 @@ async function performRefresh(): Promise<string | null> {
       }
     );
 
-    const newAccessToken =
-      response.data.access;
+    const newAccessToken = response.data.access;
 
     if (!newAccessToken) {
       return null;
     }
 
-    localStorage.setItem(
+    sessionStorage.setItem(
       "access_token",
       newAccessToken
     );
 
-    /*
-     * SimpleJWT peut éventuellement effectuer
-     * une rotation du refresh token.
-     */
     if (response.data.refresh) {
-      localStorage.setItem(
+      sessionStorage.setItem(
         "refresh_token",
         response.data.refresh
       );
@@ -111,7 +88,7 @@ async function performRefresh(): Promise<string | null> {
 }
 
 /* ============================================================
-   RÉPONSES
+   INTERCEPTOR 401
    ============================================================ */
 
 api.interceptors.response.use(
@@ -129,16 +106,10 @@ api.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    /*
-     * Si Django répond 401, on tente UNE fois
-     * de renouveler l'access token.
-     */
     if (
       error.response?.status === 401 &&
       !originalRequest._retry &&
-      !originalRequest.url?.includes(
-        "/token/refresh/"
-      )
+      !originalRequest.url?.includes("/token/refresh/")
     ) {
       originalRequest._retry = true;
 
@@ -149,8 +120,7 @@ api.interceptors.response.use(
           });
       }
 
-      const newAccessToken =
-        await refreshPromise;
+      const newAccessToken = await refreshPromise;
 
       if (newAccessToken) {
         originalRequest.headers.Authorization =
@@ -159,20 +129,16 @@ api.interceptors.response.use(
         return api(originalRequest);
       }
 
-      /*
-       * Refresh invalide ou expiré :
-       * destruction complète de la session.
-       */
+      // Session réellement terminée
+      sessionStorage.removeItem("access_token");
+      sessionStorage.removeItem("refresh_token");
+      sessionStorage.removeItem("user");
+
       localStorage.removeItem("access_token");
       localStorage.removeItem("refresh_token");
       localStorage.removeItem("user");
 
-      /*
-       * On ne redirige que si nécessaire.
-       */
-      if (
-        window.location.pathname !== "/login"
-      ) {
+      if (window.location.pathname !== "/login") {
         window.location.replace("/login");
       }
     }
