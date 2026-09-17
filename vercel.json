@@ -1,0 +1,12 @@
+{
+  "services": {
+    "frontend": {
+      "rootDirectory": "frontend",
+      "framework": "vite"
+    },
+    "backend": {
+      "rootDirectory": "backend",
+      "framework": "django"
+    }
+  }
+}
