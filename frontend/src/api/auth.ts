@@ -1,15 +1,40 @@
 import api from "./axios";
 
-type LoginResponse = { access: string; refresh: string };
-type JwtPayload = { exp?: number };
+type LoginResponse = {
+  access: string;
+  refresh: string;
+};
 
-/** Décode le payload d'un JWT afin de lire uniquement sa date d'expiration. */
+type RefreshResponse = {
+  access: string;
+  refresh?: string;
+};
+
+type JwtPayload = {
+  exp?: number;
+};
+
+/* ============================================================
+   JWT
+   ============================================================ */
+
 function decodeJwtPayload(token: string): JwtPayload | null {
   try {
     const payload = token.split(".")[1];
-    if (!payload) return null;
-    const base64 = payload.replace(/-/g, "+").replace(/_/g, "/");
-    const normalized = base64.padEnd(Math.ceil(base64.length / 4) * 4, "=");
+
+    if (!payload) {
+      return null;
+    }
+
+    const base64 = payload
+      .replace(/-/g, "+")
+      .replace(/_/g, "/");
+
+    const normalized = base64.padEnd(
+      Math.ceil(base64.length / 4) * 4,
+      "="
+    );
+
     return JSON.parse(atob(normalized)) as JwtPayload;
   } catch (error) {
     console.warn("JWT illisible.", error);
@@ -17,41 +42,164 @@ function decodeJwtPayload(token: string): JwtPayload | null {
   }
 }
 
-/** Vérifie que l'access token n'est pas déjà expiré, avec 15 s de marge. */
+/* ============================================================
+   VALIDATION DU TOKEN
+   ============================================================ */
+
 export function isTokenUsable(token: string | null): boolean {
-  if (!token) return false;
+  if (!token) {
+    return false;
+  }
+
   const payload = decodeJwtPayload(token);
-  if (!payload?.exp) return false;
-  return payload.exp > Math.floor(Date.now() / 1000) + 15;
+
+  if (!payload?.exp) {
+    return false;
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // Marge de sécurité de 15 secondes
+  return payload.exp > now + 15;
 }
 
-/** Connecte l'utilisateur et stocke les deux jetons afin qu'ils survivent à F5. */
-export async function login(username: string, password: string): Promise<void> {
-  const response = await api.post<LoginResponse>("/token/", { username, password });
-  localStorage.setItem("access_token", response.data.access);
-  localStorage.setItem("refresh_token", response.data.refresh);
-}
+/* ============================================================
+   TOKENS
+   ============================================================ */
 
-/** Supprime complètement la session locale. */
-export function logout(): void {
-  localStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-}
-
-/** Retourne l'access token actuellement mémorisé. */
 export function getAccessToken(): string | null {
   return localStorage.getItem("access_token");
 }
 
-/** Retourne le refresh token actuellement mémorisé. */
 export function getRefreshToken(): string | null {
   return localStorage.getItem("refresh_token");
 }
 
-/**
- * Indique si la session peut être utilisée ou restaurée.
- * Un refresh token présent autorise la page à rester ouverte pendant qu'Axios renouvelle l'access token.
+export function saveTokens(
+  access: string,
+  refresh?: string
+): void {
+  localStorage.setItem("access_token", access);
+
+  if (refresh) {
+    localStorage.setItem("refresh_token", refresh);
+  }
+}
+
+/* ============================================================
+   LOGIN
+   ============================================================ */
+
+export async function login(
+  username: string,
+  password: string
+): Promise<void> {
+  const response = await api.post<LoginResponse>(
+    "/token/",
+    {
+      username,
+      password,
+    }
+  );
+
+  saveTokens(
+    response.data.access,
+    response.data.refresh
+  );
+}
+
+/* ============================================================
+   LOGOUT
+   ============================================================ */
+
+export function logout(): void {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("user");
+}
+
+/* ============================================================
+   REFRESH TOKEN
+   ============================================================ */
+
+export async function refreshAccessToken(): Promise<boolean> {
+  const refreshToken = getRefreshToken();
+
+  if (!refreshToken) {
+    logout();
+    return false;
+  }
+
+  /*
+   * On vérifie d'abord localement que le refresh token
+   * n'est pas déjà expiré.
+   */
+  if (!isTokenUsable(refreshToken)) {
+    logout();
+    return false;
+  }
+
+  try {
+    const response = await api.post<RefreshResponse>(
+      "/token/refresh/",
+      {
+        refresh: refreshToken,
+      }
+    );
+
+    if (!response.data.access) {
+      logout();
+      return false;
+    }
+
+    saveTokens(
+      response.data.access,
+      response.data.refresh
+    );
+
+    return true;
+  } catch (error) {
+    console.warn(
+      "Impossible de restaurer la session.",
+      error
+    );
+
+    logout();
+
+    return false;
+  }
+}
+
+/* ============================================================
+   VÉRIFICATION DE SESSION
+   ============================================================ */
+
+export async function validateSession(): Promise<boolean> {
+  const accessToken = getAccessToken();
+
+  /*
+   * Access token encore valide :
+   * aucune requête supplémentaire nécessaire.
+   */
+  if (isTokenUsable(accessToken)) {
+    return true;
+  }
+
+  /*
+   * Access expiré :
+   * tentative de renouvellement avec le refresh token.
+   */
+  return refreshAccessToken();
+}
+
+/* ============================================================
+   AUTHENTIFICATION SYNCHRONE
+   ============================================================ */
+
+/*
+ * Cette fonction ne considère PLUS la simple présence
+ * d'un refresh_token comme une authentification valide.
  */
 export function isAuthenticated(): boolean {
-  return isTokenUsable(getAccessToken()) || Boolean(getRefreshToken());
+  return isTokenUsable(getAccessToken());
 }
