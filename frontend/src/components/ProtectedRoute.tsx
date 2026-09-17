@@ -35,10 +35,6 @@ export default function ProtectedRoute({
     let active = true;
 
     async function checkSession() {
-      /*
-       * Access token encore valide :
-       * pas besoin de faire un refresh.
-       */
       if (isAuthenticated()) {
         if (active) {
           setAuthenticated(true);
@@ -48,10 +44,6 @@ export default function ProtectedRoute({
         return;
       }
 
-      /*
-       * Access token absent ou expiré :
-       * on vérifie réellement le refresh token auprès de Django.
-       */
       const valid = await validateSession();
 
       if (active) {
@@ -66,10 +58,6 @@ export default function ProtectedRoute({
       active = false;
     };
   }, []);
-
-  /* ============================================================
-     VÉRIFICATION EN COURS
-     ============================================================ */
 
   if (checking) {
     return (
@@ -86,10 +74,6 @@ export default function ProtectedRoute({
     );
   }
 
-  /* ============================================================
-     SESSION INVALIDE
-     ============================================================ */
-
   if (!authenticated) {
     return (
       <Navigate
@@ -101,10 +85,6 @@ export default function ProtectedRoute({
       />
     );
   }
-
-  /* ============================================================
-     SESSION VALIDE
-     ============================================================ */
 
   return <>{children}</>;
 }
