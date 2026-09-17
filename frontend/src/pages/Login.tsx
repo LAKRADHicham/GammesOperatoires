@@ -55,9 +55,15 @@ type GoogleIdConfiguration = {
 type GoogleButtonConfiguration = {
   type?: "standard" | "icon";
 
-  theme?: "outline" | "filled_blue" | "filled_black";
+  theme?:
+    | "outline"
+    | "filled_blue"
+    | "filled_black";
 
-  size?: "large" | "medium" | "small";
+  size?:
+    | "large"
+    | "medium"
+    | "small";
 
   text?:
     | "signin_with"
@@ -71,7 +77,9 @@ type GoogleButtonConfiguration = {
     | "circle"
     | "square";
 
-  logo_alignment?: "left" | "center";
+  logo_alignment?:
+    | "left"
+    | "center";
 
   width?: number;
 };
@@ -145,25 +153,55 @@ const GOOGLE_SCRIPT_URL =
 
 
 /* ============================================================
-   SAUVEGARDE AUTHENTIFICATION
+   SAUVEGARDE AUTHENTIFICATION GOOGLE
    ============================================================ */
 
 function saveGoogleAuthentication(
   data: GoogleLoginResponse,
 ) {
-  localStorage.setItem(
+  /*
+   * IMPORTANT :
+   *
+   * Les données d'authentification sont stockées
+   * dans sessionStorage.
+   *
+   * Elles survivent à F5 / Ctrl+R,
+   * mais sont supprimées lorsque la session
+   * du navigateur est fermée.
+   */
+
+  sessionStorage.setItem(
     "access_token",
     data.access,
   );
 
-  localStorage.setItem(
+  sessionStorage.setItem(
     "refresh_token",
     data.refresh,
   );
 
-  localStorage.setItem(
+  sessionStorage.setItem(
     "user",
     JSON.stringify(data.user),
+  );
+
+
+  /*
+   * Nettoyage des anciens tokens éventuellement
+   * laissés dans localStorage par une ancienne
+   * version de l'application.
+   */
+
+  localStorage.removeItem(
+    "access_token",
+  );
+
+  localStorage.removeItem(
+    "refresh_token",
+  );
+
+  localStorage.removeItem(
+    "user",
   );
 }
 
@@ -173,45 +211,75 @@ function saveGoogleAuthentication(
    ============================================================ */
 
 export default function Login() {
-  const navigate = useNavigate();
+  const navigate =
+    useNavigate();
 
-  const location = useLocation();
+  const location =
+    useLocation();
 
 
   /* ==========================================================
      STATES
      ========================================================== */
 
-  const [username, setUsername] =
-    useState(
+  /*
+   * remembered_username reste volontairement
+   * dans localStorage.
+   *
+   * Cela permet de mémoriser uniquement le nom
+   * d'utilisateur sans maintenir la connexion.
+   */
+
+  const [
+    username,
+    setUsername,
+  ] = useState(
+    localStorage.getItem(
+      "remembered_username",
+    ) || "",
+  );
+
+
+  const [
+    password,
+    setPassword,
+  ] = useState("");
+
+
+  const [
+    showPassword,
+    setShowPassword,
+  ] = useState(false);
+
+
+  const [
+    rememberMe,
+    setRememberMe,
+  ] = useState(
+    Boolean(
       localStorage.getItem(
         "remembered_username",
-      ) || "",
-    );
-
-  const [password, setPassword] =
-    useState("");
-
-  const [showPassword, setShowPassword] =
-    useState(false);
-
-  const [rememberMe, setRememberMe] =
-    useState(
-      Boolean(
-        localStorage.getItem(
-          "remembered_username",
-        ),
       ),
-    );
+    ),
+  );
 
-  const [loading, setLoading] =
-    useState(false);
 
-  const [googleLoading, setGoogleLoading] =
-    useState(false);
+  const [
+    loading,
+    setLoading,
+  ] = useState(false);
 
-  const [error, setError] =
-    useState("");
+
+  const [
+    googleLoading,
+    setGoogleLoading,
+  ] = useState(false);
+
+
+  const [
+    error,
+    setError,
+  ] = useState("");
 
 
   /* ==========================================================
@@ -219,20 +287,23 @@ export default function Login() {
      ========================================================== */
 
   const googleButtonRef =
-    useRef<HTMLDivElement | null>(null);
+    useRef<HTMLDivElement | null>(
+      null,
+    );
 
 
   /* ==========================================================
-     CLIENT ID
+     GOOGLE CLIENT ID
      ========================================================== */
 
   const googleClientId =
-    import.meta.env.VITE_GOOGLE_CLIENT_ID ||
+    import.meta.env
+      .VITE_GOOGLE_CLIENT_ID ||
     "";
 
 
   /* ==========================================================
-     REDIRECTION
+     DESTINATION APRÈS CONNEXION
      ========================================================== */
 
   const getDestination =
@@ -256,6 +327,14 @@ export default function Login() {
      ========================================================== */
 
   useEffect(() => {
+    /*
+     * isAuthenticated() utilise maintenant
+     * sessionStorage via auth.ts.
+     *
+     * Si l'access token est encore valide,
+     * inutile d'afficher la page de connexion.
+     */
+
     if (isAuthenticated()) {
       navigate(
         "/dashboard",
@@ -274,7 +353,8 @@ export default function Login() {
   const handleGoogleCredential =
     useCallback(
       async (
-        response: GoogleCredentialResponse,
+        response:
+          GoogleCredentialResponse,
       ) => {
         if (!response.credential) {
           setError(
@@ -284,18 +364,30 @@ export default function Login() {
           return;
         }
 
+
         setGoogleLoading(true);
         setError("");
 
+
         try {
           /*
-           * axios.ts possède déjà :
+           * axios.ts contient déjà le baseURL.
+           *
+           * En local :
            *
            * http://127.0.0.1:8000/api
            *
-           * donc /auth/google/ devient :
+           * En production :
            *
-           * http://127.0.0.1:8000/api/auth/google/
+           * /api
+           *
+           * Donc :
+           *
+           * /auth/google/
+           *
+           * devient automatiquement :
+           *
+           * /api/auth/google/
            */
 
           const result =
@@ -307,9 +399,20 @@ export default function Login() {
               },
             );
 
+
+          /*
+           * Sauvegarde dans sessionStorage.
+           */
+
           saveGoogleAuthentication(
             result.data,
           );
+
+
+          /*
+           * Redirection vers la page
+           * initialement demandée ou dashboard.
+           */
 
           navigate(
             getDestination(),
@@ -317,14 +420,17 @@ export default function Login() {
               replace: true,
             },
           );
+
         } catch (err: unknown) {
           console.error(
             "Erreur connexion Google :",
             err,
           );
 
+
           let message =
             "Impossible de se connecter avec Google.";
+
 
           if (
             typeof err === "object" &&
@@ -338,6 +444,7 @@ export default function Login() {
                 };
               };
 
+
             message =
               axiosError.response?.data
                 ?.detail ||
@@ -346,11 +453,14 @@ export default function Login() {
               message;
           }
 
+
           setError(message);
+
         } finally {
           setGoogleLoading(false);
         }
       },
+
       [
         getDestination,
         navigate,
@@ -372,11 +482,15 @@ export default function Login() {
         return;
       }
 
+
       /*
-       * Nettoyage avant rendu.
+       * Nettoyage du conteneur avant
+       * le rendu du bouton.
        */
+
       googleButtonRef.current.innerHTML =
         "";
+
 
       window.google.accounts.id.initialize(
         {
@@ -385,6 +499,13 @@ export default function Login() {
 
           callback:
             handleGoogleCredential,
+
+          /*
+           * IMPORTANT :
+           *
+           * Google ne doit pas sélectionner
+           * automatiquement un compte.
+           */
 
           auto_select:
             false,
@@ -398,6 +519,7 @@ export default function Login() {
       /*
        * Bouton officiel Google.
        */
+
       window.google.accounts.id.renderButton(
         googleButtonRef.current,
         {
@@ -423,6 +545,7 @@ export default function Login() {
             300,
         },
       );
+
     }, [
       googleClientId,
       handleGoogleCredential,
@@ -446,6 +569,7 @@ export default function Login() {
     /*
      * Google déjà chargé.
      */
+
     if (window.google) {
       initializeGoogle();
 
@@ -454,8 +578,9 @@ export default function Login() {
 
 
     /*
-     * Script déjà présent.
+     * Script déjà présent dans la page.
      */
+
     const existingScript =
       document.getElementById(
         GOOGLE_SCRIPT_ID,
@@ -468,6 +593,7 @@ export default function Login() {
         initializeGoogle,
       );
 
+
       return () => {
         existingScript.removeEventListener(
           "load",
@@ -478,21 +604,27 @@ export default function Login() {
 
 
     /*
-     * Création du script GIS.
+     * Création du script Google
+     * Identity Services.
      */
+
     const script =
       document.createElement(
         "script",
       );
 
+
     script.id =
       GOOGLE_SCRIPT_ID;
+
 
     script.src =
       GOOGLE_SCRIPT_URL;
 
+
     script.async =
       true;
+
 
     script.defer =
       true;
@@ -525,6 +657,7 @@ export default function Login() {
         initializeGoogle,
       );
     };
+
   }, [
     googleClientId,
     initializeGoogle,
@@ -537,12 +670,17 @@ export default function Login() {
 
   const handleSubmit =
     async (
-      event: FormEvent<HTMLFormElement>,
+      event:
+        FormEvent<HTMLFormElement>,
     ) => {
       event.preventDefault();
 
       setError("");
 
+
+      /* --------------------------------------------------------
+         VALIDATION USERNAME
+         -------------------------------------------------------- */
 
       if (!username.trim()) {
         setError(
@@ -552,6 +690,10 @@ export default function Login() {
         return;
       }
 
+
+      /* --------------------------------------------------------
+         VALIDATION PASSWORD
+         -------------------------------------------------------- */
 
       if (!password) {
         setError(
@@ -564,10 +706,19 @@ export default function Login() {
 
       setLoading(true);
 
+
       try {
         /*
-         * Fonction JWT existante du projet.
+         * login() utilise auth.ts.
+         *
+         * auth.ts sauvegarde maintenant :
+         *
+         * access_token
+         * refresh_token
+         *
+         * dans sessionStorage.
          */
+
         await login(
           username.trim(),
           password,
@@ -575,13 +726,21 @@ export default function Login() {
 
 
         /*
-         * Mémorisation du username.
+         * ======================================================
+         * SE SOUVENIR DE MOI
+         * ======================================================
+         *
+         * On conserve uniquement le username.
+         *
+         * Aucun token n'est conservé ici.
          */
+
         if (rememberMe) {
           localStorage.setItem(
             "remembered_username",
             username.trim(),
           );
+
         } else {
           localStorage.removeItem(
             "remembered_username",
@@ -590,10 +749,18 @@ export default function Login() {
 
 
         /*
-         * Vérification access token.
+         * ======================================================
+         * VÉRIFICATION ACCESS TOKEN
+         * ======================================================
+         *
+         * IMPORTANT :
+         *
+         * On vérifie maintenant sessionStorage
+         * et NON localStorage.
          */
+
         const accessToken =
-          localStorage.getItem(
+          sessionStorage.getItem(
             "access_token",
           );
 
@@ -605,21 +772,28 @@ export default function Login() {
         }
 
 
+        /*
+         * Connexion réussie.
+         */
+
         navigate(
           getDestination(),
           {
             replace: true,
           },
         );
+
       } catch (err: unknown) {
         console.error(
           "Erreur connexion :",
           err,
         );
 
+
         setError(
           "Identifiant ou mot de passe incorrect.",
         );
+
       } finally {
         setLoading(false);
       }
@@ -670,11 +844,13 @@ export default function Login() {
               MAINTENANCE INDUSTRIELLE
             </span>
 
+
             <h1>
               Gammes
               <br />
               Maintenance
             </h1>
+
 
             <p className="login-brand-description">
               Vos procédures de maintenance
@@ -774,7 +950,9 @@ export default function Login() {
               <LockKeyhole size={22} />
             </div>
 
+
             <div>
+
               <h2>
                 Connexion
               </h2>
@@ -783,6 +961,7 @@ export default function Login() {
                 Accédez à votre espace
                 de travail
               </p>
+
             </div>
 
           </div>
@@ -815,6 +994,7 @@ export default function Login() {
                 Utilisateur
               </label>
 
+
               <div className="login-input-wrapper">
 
                 <User
@@ -822,17 +1002,21 @@ export default function Login() {
                   className="login-input-icon"
                 />
 
+
                 <input
                   id="username"
                   type="text"
                   autoComplete="username"
                   value={username}
+
                   onChange={(event) =>
                     setUsername(
                       event.target.value,
                     )
                   }
+
                   placeholder="Votre identifiant"
+
                   disabled={
                     loading ||
                     googleLoading
@@ -854,6 +1038,7 @@ export default function Login() {
                 Mot de passe
               </label>
 
+
               <div className="login-input-wrapper">
 
                 <LockKeyhole
@@ -861,21 +1046,28 @@ export default function Login() {
                   className="login-input-icon"
                 />
 
+
                 <input
                   id="password"
+
                   type={
                     showPassword
                       ? "text"
                       : "password"
                   }
+
                   autoComplete="current-password"
+
                   value={password}
+
                   onChange={(event) =>
                     setPassword(
                       event.target.value,
                     )
                   }
+
                   placeholder="Votre mot de passe"
+
                   disabled={
                     loading ||
                     googleLoading
@@ -885,13 +1077,16 @@ export default function Login() {
 
                 <button
                   type="button"
+
                   className="login-password-toggle"
+
                   onClick={() =>
                     setShowPassword(
                       (previous) =>
                         !previous,
                     )
                   }
+
                   aria-label={
                     showPassword
                       ? "Masquer le mot de passe"
@@ -912,21 +1107,24 @@ export default function Login() {
             </div>
 
 
-            {/* REMEMBER */}
+            {/* REMEMBER USERNAME */}
 
             <label className="login-remember">
 
               <input
                 type="checkbox"
+
                 checked={
                   rememberMe
                 }
+
                 onChange={(event) =>
                   setRememberMe(
                     event.target.checked,
                   )
                 }
               />
+
 
               <span>
                 Se souvenir de moi
@@ -939,7 +1137,9 @@ export default function Login() {
 
             <button
               type="submit"
+
               className="login-submit"
+
               disabled={
                 loading ||
                 googleLoading
@@ -949,6 +1149,7 @@ export default function Login() {
               {loading
                 ? "Connexion..."
                 : "Se connecter"}
+
 
               {!loading && (
                 <span>
@@ -997,8 +1198,10 @@ export default function Login() {
                   ref={
                     googleButtonRef
                   }
+
                   className="login-google-button"
                 />
+
 
                 {googleLoading && (
                   <p className="login-google-loading">
