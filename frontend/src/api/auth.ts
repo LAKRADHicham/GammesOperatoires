@@ -36,14 +36,13 @@ function decodeJwtPayload(token: string): JwtPayload | null {
     );
 
     return JSON.parse(atob(normalized)) as JwtPayload;
-  } catch (error) {
-    console.warn("JWT illisible.", error);
+  } catch {
     return null;
   }
 }
 
 /* ============================================================
-   VALIDATION DU TOKEN
+   TOKEN VALIDE ?
    ============================================================ */
 
 export function isTokenUsable(token: string | null): boolean {
@@ -59,7 +58,6 @@ export function isTokenUsable(token: string | null): boolean {
 
   const now = Math.floor(Date.now() / 1000);
 
-  // Marge de sécurité de 15 secondes
   return payload.exp > now + 15;
 }
 
@@ -68,21 +66,21 @@ export function isTokenUsable(token: string | null): boolean {
    ============================================================ */
 
 export function getAccessToken(): string | null {
-  return localStorage.getItem("access_token");
+  return sessionStorage.getItem("access_token");
 }
 
 export function getRefreshToken(): string | null {
-  return localStorage.getItem("refresh_token");
+  return sessionStorage.getItem("refresh_token");
 }
 
 export function saveTokens(
   access: string,
   refresh?: string
 ): void {
-  localStorage.setItem("access_token", access);
+  sessionStorage.setItem("access_token", access);
 
   if (refresh) {
-    localStorage.setItem("refresh_token", refresh);
+    sessionStorage.setItem("refresh_token", refresh);
   }
 }
 
@@ -113,13 +111,21 @@ export async function login(
    ============================================================ */
 
 export function logout(): void {
+  sessionStorage.removeItem("access_token");
+  sessionStorage.removeItem("refresh_token");
+  sessionStorage.removeItem("user");
+
+  /*
+   * Nettoyage des anciennes versions de l'application
+   * qui utilisaient localStorage.
+   */
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
   localStorage.removeItem("user");
 }
 
 /* ============================================================
-   REFRESH TOKEN
+   REFRESH ACCESS TOKEN
    ============================================================ */
 
 export async function refreshAccessToken(): Promise<boolean> {
@@ -130,10 +136,6 @@ export async function refreshAccessToken(): Promise<boolean> {
     return false;
   }
 
-  /*
-   * On vérifie d'abord localement que le refresh token
-   * n'est pas déjà expiré.
-   */
   if (!isTokenUsable(refreshToken)) {
     logout();
     return false;
@@ -158,48 +160,28 @@ export async function refreshAccessToken(): Promise<boolean> {
     );
 
     return true;
-  } catch (error) {
-    console.warn(
-      "Impossible de restaurer la session.",
-      error
-    );
-
+  } catch {
     logout();
-
     return false;
   }
 }
 
 /* ============================================================
-   VÉRIFICATION DE SESSION
+   SESSION
    ============================================================ */
 
 export async function validateSession(): Promise<boolean> {
   const accessToken = getAccessToken();
 
-  /*
-   * Access token encore valide :
-   * aucune requête supplémentaire nécessaire.
-   */
+  // Access encore valide
   if (isTokenUsable(accessToken)) {
     return true;
   }
 
-  /*
-   * Access expiré :
-   * tentative de renouvellement avec le refresh token.
-   */
+  // Access expiré : tentative avec le refresh
   return refreshAccessToken();
 }
 
-/* ============================================================
-   AUTHENTIFICATION SYNCHRONE
-   ============================================================ */
-
-/*
- * Cette fonction ne considère PLUS la simple présence
- * d'un refresh_token comme une authentification valide.
- */
 export function isAuthenticated(): boolean {
   return isTokenUsable(getAccessToken());
 }
