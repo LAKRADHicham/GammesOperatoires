@@ -1,0 +1,720 @@
+.gamme-create-page {
+  width: 100%;
+  color: #172b2a;
+}
+
+/* ============================================================
+   EN-TÊTE
+   ============================================================ */
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.page-header h1 {
+  margin: 5px 0 6px;
+  color: #063d32;
+  font-size: 30px;
+}
+
+.page-header p {
+  margin: 0;
+  color: #64748b;
+}
+
+.page-kicker {
+  display: inline-flex;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: #ddf7ee;
+  color: #007f5f !important;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+
+/* ============================================================
+   WIZARD
+   ============================================================ */
+
+.wizard-progress {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.wizard-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 10px;
+  border: 0;
+  border-radius: 10px;
+  background: #eef3f1;
+  color: #6b7f79;
+  text-align: left;
+  cursor: default;
+}
+
+.wizard-step > span {
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 1px solid #dde7e3;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.wizard-step.active {
+  background: #ddf7ee;
+  color: #007f5f;
+}
+
+.wizard-step.active > span,
+.wizard-step.done > span {
+  background: #00a878;
+  border-color: #00a878;
+  color: #ffffff;
+}
+
+.wizard-step.done {
+  background: #f1fbf7;
+  color: #007f5f;
+  cursor: pointer;
+}
+
+
+/* ============================================================
+   CARTE PRINCIPALE
+   ============================================================ */
+
+.wizard-card {
+  padding: 24px;
+  border: 1px solid #dde7e3;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 4px 16px rgba(6, 61, 50, 0.05);
+}
+
+.section-heading {
+  margin-bottom: 20px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  color: #063d32;
+  font-size: 20px;
+}
+
+.section-heading p {
+  margin: 5px 0 0;
+  color: #64748b;
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   FORMULAIRES
+   ============================================================ */
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  min-width: 0;
+}
+
+.form-span-2 {
+  grid-column: 1 / -1;
+}
+
+.form-grid label > span,
+.field-label {
+  color: #475d57;
+  font-size: 12px;
+  font-weight: 750;
+}
+
+.form-grid input,
+.form-grid select,
+.form-grid textarea,
+.quantity-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 11px;
+  border: 1px solid #dde7e3;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172b2a;
+  font: inherit;
+  outline: none;
+}
+
+.form-grid textarea {
+  resize: vertical;
+}
+
+.form-grid input:focus,
+.form-grid select:focus,
+.form-grid textarea:focus,
+.quantity-input:focus {
+  border-color: #00a878;
+  box-shadow: 0 0 0 3px rgba(0, 168, 120, 0.11);
+}
+
+
+/* ============================================================
+   ÉQUIPEMENT
+   ============================================================ */
+
+.equipment-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #dde7e3;
+  border-radius: 10px;
+  background: #f6f8fa;
+}
+
+.equipment-summary div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.equipment-summary span {
+  font-size: 10px;
+  color: #73857f;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.equipment-summary strong {
+  font-size: 13px;
+  color: #063d32;
+  overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   IMAGE DE LA GAMME
+   ============================================================ */
+
+.image-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 12px;
+  border: 1px solid #dde7e3;
+  border-radius: 12px;
+  background: #f8fcfa;
+}
+
+.image-preview img {
+  width: 180px;
+  max-width: 100%;
+  max-height: 130px;
+  object-fit: cover;
+  border-radius: 10px;
+  border: 1px solid #dde7e3;
+}
+
+.image-preview button {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(220, 53, 69, 0.22);
+  border-radius: 9px;
+  padding: 9px 11px;
+  background: #ffffff;
+  color: #dc3545;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.image-preview button:hover {
+  background: rgba(220, 53, 69, 0.06);
+}
+
+
+/* ============================================================
+   SÉCURITÉ / SÉLECTIONS
+   ============================================================ */
+
+.selection-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.selection-panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #dde7e3;
+  border-radius: 11px;
+  background: #fbfdfc;
+}
+
+.selection-panel h3 {
+  margin: 0 0 12px;
+  color: #063d32;
+}
+
+.selection-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  min-width: 0;
+  padding: 9px 0;
+  border-bottom: 1px solid #edf2f0;
+  cursor: pointer;
+}
+
+.selection-row:last-child {
+  border-bottom: 0;
+}
+
+.selection-row input {
+  flex: 0 0 auto;
+  margin-top: 2px;
+}
+
+.selection-row span {
+  min-width: 0;
+  color: #314b45;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.empty-selection {
+  margin: 0;
+  color: #8b9a96;
+  font-size: 12px;
+}
+
+
+/* ============================================================
+   MOYENS
+   ============================================================ */
+
+.means-columns {
+  grid-template-columns:
+    minmax(0, 1fr)
+    minmax(0, 1.15fr);
+}
+
+
+/* ============================================================
+   OUTILLAGES
+   ============================================================ */
+
+.quantity-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 76px;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid #edf2f0;
+}
+
+.quantity-row:last-child {
+  border-bottom: 0;
+}
+
+.quantity-row .selection-row {
+  min-width: 0;
+  border-bottom: 0;
+  padding: 7px 0;
+}
+
+.quantity-input {
+  padding: 7px 8px;
+  min-width: 0;
+}
+
+
+/* ============================================================
+   PIÈCES DE RECHANGE LIBRES
+   ============================================================ */
+
+.panel-help {
+  margin: -4px 0 14px;
+  color: #5f746e;
+  font-size: 0.88rem;
+}
+
+.piece-entry-grid {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1.4fr)
+    minmax(0, 1fr)
+    110px;
+  gap: 12px;
+  align-items: end;
+  margin-top: 12px;
+}
+
+.piece-entry-grid label {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.piece-entry-grid label span {
+  color: #172b2a;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.piece-entry-grid input {
+  width: 100%;
+  min-height: 42px;
+  box-sizing: border-box;
+  border: 1px solid #dde7e3;
+  border-radius: 10px;
+  padding: 9px 11px;
+  background: #ffffff;
+  color: #172b2a;
+  outline: none;
+}
+
+.piece-entry-grid input:focus {
+  border-color: #00a878;
+  box-shadow: 0 0 0 3px rgba(0, 168, 120, 0.12);
+}
+
+.add-piece-button {
+  grid-column: 1 / -1;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  background: #00966d;
+  color: #ffffff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.add-piece-button:hover {
+  background: #007f5f;
+}
+
+.piece-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.piece-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 12px;
+  border: 1px solid #dde7e3;
+  border-radius: 10px;
+  background: #f8fcfa;
+}
+
+.piece-row > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.piece-row strong {
+  color: #172b2a;
+  overflow-wrap: anywhere;
+}
+
+.piece-row span {
+  color: #61756f;
+  font-size: 0.83rem;
+  overflow-wrap: anywhere;
+}
+
+.danger-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: 1px solid rgba(220, 53, 69, 0.22);
+  border-radius: 9px;
+  background: #ffffff;
+  color: #dc3545;
+  cursor: pointer;
+}
+
+.danger-icon-button:hover {
+  background: rgba(220, 53, 69, 0.07);
+}
+
+
+/* ============================================================
+   VÉRIFICATION
+   ============================================================ */
+
+.review-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.review-grid > div {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #dde7e3;
+  border-radius: 10px;
+  background: #f6f8fa;
+}
+
+.review-grid span {
+  display: block;
+  margin-bottom: 4px;
+  color: #71817c;
+  font-size: 11px;
+}
+
+.review-grid strong {
+  color: #063d32;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+
+/* ============================================================
+   ERREURS
+   ============================================================ */
+
+.form-error {
+  margin-bottom: 14px;
+  padding: 11px 13px;
+  border: 1px solid #fecdd3;
+  border-radius: 9px;
+  background: #fff1f2;
+  color: #b4232f;
+  font-size: 13px;
+}
+
+
+/* ============================================================
+   ACTIONS DU WIZARD
+   ============================================================ */
+
+.wizard-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.secondary-button,
+.primary-button {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 14px;
+  border-radius: 8px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.secondary-button {
+  border: 1px solid #dde7e3;
+  background: #ffffff;
+  color: #475d57;
+}
+
+.secondary-button:hover:not(:disabled) {
+  background: #f6f8fa;
+}
+
+.primary-button {
+  border: 0;
+  background: #00966d;
+  color: #ffffff;
+}
+
+.primary-button:hover:not(:disabled) {
+  background: #007f5f;
+}
+
+.secondary-button:disabled,
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+
+/* ============================================================
+   CHARGEMENT
+   ============================================================ */
+
+.page-loading {
+  min-height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #60766f;
+}
+
+.spin {
+  animation: gamme-spin 0.9s linear infinite;
+}
+
+@keyframes gamme-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+
+@media (max-width: 1000px) {
+  .wizard-progress {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .selection-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .review-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .means-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .page-header {
+    flex-direction: column;
+  }
+
+  .wizard-progress,
+  .form-grid,
+  .selection-columns,
+  .review-grid,
+  .piece-entry-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-span-2 {
+    grid-column: auto;
+  }
+
+  .equipment-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-card {
+    padding: 16px;
+  }
+
+  .quantity-row {
+    grid-template-columns: minmax(0, 1fr) 70px;
+  }
+
+  .image-preview {
+    flex-direction: column;
+  }
+
+  .image-preview img {
+    width: 100%;
+    max-height: 240px;
+  }
+
+  .wizard-actions {
+    flex-direction: column-reverse;
+  }
+
+  .secondary-button,
+  .primary-button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .wizard-progress {
+    grid-template-columns: 1fr;
+  }
+
+  .wizard-step {
+    width: 100%;
+  }
+
+  .quantity-row {
+    grid-template-columns: 1fr;
+  }
+
+  .quantity-input {
+    width: 90px;
+  }
+}
+
+
+/* Affiche l'étape d'enregistrement en cours sans changer de page. */
+.save-progress {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: 14px 0;
+  padding: 12px 14px;
+  border: 1px solid #b8e8d6;
+  border-radius: 10px;
+  background: #f1fbf7;
+  color: #007f5f;
+  font-weight: 750;
+}
+
+/* Les résumés Moyens/Sécurité peuvent contenir plusieurs éléments. */
+.review-grid strong {
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+/* PHASE 3 — Étapes / Actions / Images */
+.steps-toolbar,.maintenance-step-header,.step-subsection-title{display:flex;align-items:center;justify-content:space-between;gap:12px}.steps-toolbar{padding:14px 16px;margin-bottom:18px;border:1px solid #b8e8d6;border-radius:12px;background:#f1fbf7}.steps-toolbar>div,.maintenance-step-heading,.step-subsection-title>div{display:flex;flex-direction:column;gap:3px}.empty-state-box,.step-images-empty{padding:22px;border:1px dashed #9ccdbd;border-radius:11px;color:#64748b;text-align:center}.maintenance-steps-list{display:flex;flex-direction:column;gap:18px}.maintenance-step-card{overflow:hidden;border:1px solid #dbe8e3;border-radius:14px;background:#fff}.maintenance-step-header{padding:14px 16px;background:#f1fbf7}.step-number-badge{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:#00966d;color:#fff;font-weight:800}.maintenance-step-heading{flex:1}.step-main-fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(140px,1fr);gap:14px;padding:18px}.step-main-fields label{display:flex;flex-direction:column;gap:6px}.step-main-fields input,.step-main-fields textarea,.action-editor-row textarea,.step-image-card textarea{width:100%;box-sizing:border-box;border:1px solid #d6e2de;border-radius:9px;padding:10px 11px;font:inherit}.step-description-field{grid-column:1/-1}.step-subsection{padding:18px;border-top:1px solid #edf2f0}.actions-editor-list{display:flex;flex-direction:column;gap:9px}.action-editor-row{display:grid;grid-template-columns:34px minmax(0,1fr) 38px;gap:9px}.action-order{width:34px;height:34px;display:grid;place-items:center;border-radius:8px;background:#ddf7ee;color:#007f5f;font-weight:800}.step-file-button{position:relative;cursor:pointer}.step-file-button input{display:none}.step-images-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}.step-image-card{padding:10px;border:1px solid #dbe8e3;border-radius:11px}.step-image-preview{position:relative;margin-bottom:9px}.step-image-preview img{display:block;width:100%;height:150px;object-fit:contain}.step-image-remove{position:absolute;top:7px;right:7px;width:32px;height:32px;border:1px solid #f4b5bb;border-radius:8px;background:#fff;color:#dc3545}.step-subsection-title{align-items:flex-start;margin-bottom:13px}@media(max-width:760px){.steps-toolbar,.step-subsection-title{align-items:stretch;flex-direction:column}.step-main-fields{grid-template-columns:1fr}.step-description-field{grid-column:auto}.step-images-grid{grid-template-columns:1fr}}
+
+
+/* CORRECTIONS WIZARD */
+.status-field{display:flex;flex-direction:column;gap:7px}.status-display{min-height:40px;display:flex;align-items:center;gap:9px;padding:0 11px;border:1px solid #b8e8d6;border-radius:7px;background:#f1fbf7;color:#007f5f;font-size:13px;font-weight:750}.status-dot{width:8px;height:8px;border-radius:50%;background:#00a878}.status-field small{color:#71817c;font-size:11px}.wizard-card{border-radius:10px;box-shadow:0 2px 10px rgba(6,61,50,.045)}.maintenance-step-card{border-radius:9px}.step-main-fields{padding:14px}.step-subsection{padding:14px}.step-images-empty{min-height:70px;display:grid;place-items:center;background:#fbfdfc}.step-image-card textarea{display:none}.danger-icon-button:disabled{opacity:.35;cursor:not-allowed}
+
+/* Section redacteur */
+.profile-section-title { margin-top:4px; padding-top:14px; border-top:1px solid #dde7e3; color:#063d32; font-size:13px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; }
+.form-grid input[readonly] { background:#f6f8fa; color:#475d57; cursor:default; }

@@ -1,0 +1,270 @@
+/* =========================================================
+   GAMMES MAINTENANCE — THÈME GLOBAL VERT & BLANC
+   Ce fichier est chargé en dernier depuis App.tsx.
+   ========================================================= */
+
+:root {
+  --gm-green-950: #052e16;
+  --gm-green-900: #14532d;
+  --gm-green-800: #166534;
+  --gm-green-700: #15803d;
+  --gm-green-600: #16a34a;
+  --gm-green-500: #22c55e;
+  --gm-green-200: #bbf7d0;
+  --gm-green-100: #dcfce7;
+  --gm-green-50: #f0fdf4;
+
+  --gm-white: #ffffff;
+  --gm-bg: #f8fafc;
+  --gm-border: #e2e8f0;
+  --gm-text: #0f172a;
+  --gm-muted: #64748b;
+  --gm-danger: #dc2626;
+  --gm-danger-soft: #fef2f2;
+
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  color: var(--gm-text);
+  background: var(--gm-bg);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  background: var(--gm-bg);
+}
+
+body {
+  color: var(--gm-text);
+}
+
+/* Liens */
+a {
+  color: var(--gm-green-700);
+}
+
+a:hover {
+  color: var(--gm-green-900);
+}
+
+/* Sidebar / navigation : couvre les noms de classes usuels du projet */
+.sidebar,
+.app-sidebar,
+.layout-sidebar,
+nav.sidebar {
+  background: linear-gradient(180deg, var(--gm-green-950) 0%, var(--gm-green-900) 100%) !important;
+  color: var(--gm-white) !important;
+}
+
+.sidebar a,
+.app-sidebar a,
+.layout-sidebar a,
+.sidebar button,
+.app-sidebar button {
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+.sidebar a:hover,
+.sidebar a.active,
+.sidebar .active,
+.app-sidebar a:hover,
+.app-sidebar a.active,
+.layout-sidebar a:hover,
+.layout-sidebar a.active {
+  color: var(--gm-white) !important;
+  background: rgba(255, 255, 255, 0.12) !important;
+}
+
+.sidebar svg,
+.app-sidebar svg,
+.layout-sidebar svg {
+  color: currentColor;
+}
+
+/* Cartes */
+.card,
+.dashboard-card,
+.stat-card,
+.module-card,
+.equipment-card,
+.reference-card,
+.wizard-card,
+.detail-section,
+.edit-form,
+.qr-card {
+  background: var(--gm-white);
+  border-color: var(--gm-border);
+}
+
+/* Titres */
+h1,
+h2,
+h3,
+.module-header h1,
+.detail-hero h1,
+.equipment-header h1,
+.detail-section h2,
+.edit-form h2,
+.qr-card h1 {
+  color: var(--gm-green-900);
+}
+
+/* Boutons principaux */
+button.primary,
+.btn-primary,
+.primary-button,
+.module-button-primary,
+.module-button-blue,
+.module-button-green,
+.equipment-create,
+.wizard-next,
+.wizard-submit,
+.reference-add-button {
+  background: var(--gm-green-600) !important;
+  color: var(--gm-white) !important;
+  border-color: var(--gm-green-600) !important;
+}
+
+button.primary:hover,
+.btn-primary:hover,
+.primary-button:hover,
+.module-button-primary:hover,
+.module-button-blue:hover,
+.module-button-green:hover,
+.equipment-create:hover,
+.wizard-next:hover,
+.wizard-submit:hover,
+.reference-add-button:hover {
+  background: var(--gm-green-700) !important;
+  border-color: var(--gm-green-700) !important;
+}
+
+/* Champs */
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--gm-green-600) !important;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
+}
+
+/* Tables */
+table th,
+.module-table th,
+.equipment-table th,
+.reference-table th {
+  background: var(--gm-green-50);
+  color: var(--gm-green-900);
+}
+
+table tbody tr:hover,
+.module-table tbody tr:hover,
+.equipment-table tbody tr:hover,
+.reference-table tbody tr:hover {
+  background: #fbfefc;
+}
+
+/* Badges */
+.status-validee,
+.eq-active,
+.qr-valid {
+  background: var(--gm-green-100) !important;
+  color: var(--gm-green-800) !important;
+}
+
+.status-en_validation {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.status-brouillon {
+  background: #ecfdf5 !important;
+  color: var(--gm-green-900) !important;
+}
+
+.status-archivee,
+.eq-inactive {
+  background: #f1f5f9 !important;
+  color: #64748b !important;
+}
+
+/* Codes, versions et icônes fonctionnelles */
+.code-pill,
+.version-pill,
+.hero-code,
+.icon-blue,
+.icon-green,
+.icon-salmon {
+  background: var(--gm-green-100) !important;
+  color: var(--gm-green-900) !important;
+}
+
+.step-number,
+.qr-brand > span {
+  background: var(--gm-green-600) !important;
+  color: var(--gm-white) !important;
+}
+
+/* Wizard */
+.wizard-step.active,
+.wizard-step.completed,
+.step-indicator.active,
+.step-indicator.completed {
+  background: var(--gm-green-600) !important;
+  border-color: var(--gm-green-600) !important;
+  color: var(--gm-white) !important;
+}
+
+.wizard-progress-fill,
+.progress-fill {
+  background: var(--gm-green-600) !important;
+}
+
+/* Suppression : seule action volontairement rouge */
+.danger,
+.btn-danger,
+.delete-button,
+button[aria-label*="Supprimer"],
+button[title*="Supprimer"] {
+  color: var(--gm-danger);
+}
+
+/* Messages */
+.module-success,
+.success-message {
+  background: var(--gm-green-50) !important;
+  color: var(--gm-green-800) !important;
+}
+
+.module-error,
+.error-message {
+  background: var(--gm-danger-soft) !important;
+  color: #b91c1c !important;
+}
+
+/* QR public */
+.qr-page {
+  background:
+    radial-gradient(circle at top right, var(--gm-green-100), transparent 34%),
+    var(--gm-bg) !important;
+}
+
+.qr-card {
+  box-shadow: 0 22px 55px rgba(20, 83, 45, 0.13) !important;
+}
+
+/* Scrollbar discrète */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #86efac #f1f5f9;
+}
+
+@media (max-width: 800px) {
+  .sidebar,
+  .app-sidebar,
+  .layout-sidebar {
+    background: var(--gm-green-900) !important;
+  }
+}

@@ -1,0 +1,342 @@
+/* ============================================================
+   GAMMES MAINTENANCE — POLISH GLOBAL & MICRO-ANIMATIONS
+   Couche visuelle non destructive chargée après le thème V4.
+   ============================================================ */
+
+:root {
+  --gm-shadow-xs: 0 2px 8px rgba(6, 61, 50, 0.04);
+  --gm-shadow-sm: 0 8px 24px rgba(6, 61, 50, 0.06);
+  --gm-shadow-md: 0 16px 42px rgba(6, 61, 50, 0.10);
+  --gm-ring: 0 0 0 4px rgba(0, 168, 120, 0.10);
+  --gm-ease: cubic-bezier(.2,.8,.2,1);
+}
+
+@keyframes gm-page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gm-card-in {
+  from { opacity: 0; transform: translateY(14px) scale(.992); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes gm-row-in {
+  from { opacity: 0; transform: translateX(-5px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes gm-pop {
+  0% { opacity: 0; transform: scale(.9); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes gm-spin { to { transform: rotate(360deg); } }
+
+/* Pages principales */
+.page-content,
+.dashboard-page,
+.dashboard-page-v2,
+.dashboard-page-v3,
+.module-page-v3,
+.ref-page,
+.gamme-create-page,
+.gamme-detail-page,
+.gamme-edit-page,
+.profile-page,
+.equipements-page,
+.gammes-page,
+.gammes-list-page {
+  animation: gm-page-in .42s var(--gm-ease) both;
+}
+
+/* Arrière-plan plus profond */
+body,
+.application-content {
+  background:
+    radial-gradient(circle at 88% 2%, rgba(0,168,120,.055), transparent 24rem),
+    #f6f8fa;
+}
+
+/* Topbar */
+.topbar {
+  border-bottom-color: rgba(199,216,210,.85) !important;
+  background: rgba(255,255,255,.90) !important;
+  box-shadow: 0 4px 20px rgba(6,61,50,.035);
+  backdrop-filter: blur(16px) saturate(140%);
+}
+
+.search-box,
+.module-v3-search,
+.ref-search {
+  transition: border-color .22s ease, box-shadow .22s ease, transform .22s ease, background .22s ease;
+}
+
+.search-box:focus-within,
+.module-v3-search:focus-within,
+.ref-search:focus-within {
+  border-color: #77d8bc !important;
+  background: #fff !important;
+  box-shadow: var(--gm-ring) !important;
+  transform: translateY(-1px);
+}
+
+.user-avatar,
+.profile-avatar {
+  transition: transform .25s var(--gm-ease), box-shadow .25s ease;
+}
+.user-info:hover .user-avatar,
+.profile-hero:hover .profile-avatar {
+  transform: scale(1.06) rotate(-2deg);
+  box-shadow: 0 10px 24px rgba(0,127,95,.18);
+}
+
+.icon-button {
+  border-radius: 10px !important;
+  transition: transform .2s ease, background .2s ease, color .2s ease;
+}
+.icon-button:hover {
+  color: #007f5f !important;
+  background: #f1fbf7 !important;
+  transform: translateY(-1px);
+}
+
+/* Sidebar */
+.sidebar {
+  box-shadow: 10px 0 34px rgba(6,61,50,.10) !important;
+}
+.sidebar-link,
+.sidebar-sub-link {
+  position: relative;
+  overflow: hidden;
+  transition: transform .2s var(--gm-ease), background .2s ease, color .2s ease, box-shadow .2s ease !important;
+}
+.sidebar-link:hover,
+.sidebar-sub-link:hover {
+  transform: translateX(3px);
+}
+.sidebar-link.active,
+.sidebar-sub-link.active {
+  box-shadow: inset 3px 0 0 #77d8bc, 0 8px 22px rgba(0,0,0,.08) !important;
+}
+.sidebar-link svg,
+.sidebar-sub-link svg {
+  transition: transform .22s var(--gm-ease);
+}
+.sidebar-link:hover svg,
+.sidebar-sub-link:hover svg {
+  transform: scale(1.10);
+}
+
+/* Titres */
+h1, h2, h3 { text-wrap: balance; }
+.page-title h1,
+.dash-title-row h1,
+.module-v3-header h1,
+.ref-header h1,
+.page-header h1,
+.gamme-detail-header h1,
+.profile-header h1 {
+  letter-spacing: -.035em;
+}
+
+/* Cartes réutilisées dans toutes les sections */
+.dash-kpi-card,
+.dash-panel,
+.module-v3-card,
+.ref-card,
+.wizard-card,
+.gd-card,
+.gd-summary,
+.profile-hero,
+.profile-card,
+.equipment-card,
+.gamme-card,
+.card,
+.panel {
+  transition: transform .28s var(--gm-ease), box-shadow .28s ease, border-color .28s ease !important;
+}
+
+.dash-kpi-card,
+.module-v3-card,
+.ref-card,
+.wizard-card,
+.gd-card,
+.profile-hero {
+  animation: gm-card-in .5s var(--gm-ease) both;
+}
+
+.dash-kpi-card:hover,
+.module-v3-card:hover,
+.ref-card:hover,
+.gd-card:hover,
+.profile-hero:hover,
+.equipment-card:hover,
+.gamme-card:hover {
+  transform: translateY(-3px);
+  border-color: #bdebdc !important;
+  box-shadow: var(--gm-shadow-md) !important;
+}
+
+/* KPI */
+.dash-kpi-icon,
+.stat-icon {
+  transition: transform .28s var(--gm-ease), box-shadow .28s ease;
+}
+.dash-kpi-card:hover .dash-kpi-icon,
+.stat-card:hover .stat-icon {
+  transform: translateY(-2px) rotate(-3deg) scale(1.06);
+  box-shadow: 0 8px 20px rgba(0,168,120,.14);
+}
+.dash-kpi-content strong,
+.stat-card strong {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Boutons */
+button,
+.ref-primary,
+.ref-secondary,
+.gd-primary,
+.gd-secondary,
+.profile-edit-button,
+.dashboard-refresh {
+  transition: transform .18s var(--gm-ease), box-shadow .2s ease, background .2s ease, border-color .2s ease, opacity .2s ease !important;
+}
+button:not(:disabled):hover,
+.ref-primary:hover,
+.ref-secondary:hover,
+.gd-primary:hover,
+.gd-secondary:hover,
+.profile-edit-button:hover,
+.dashboard-refresh:hover {
+  transform: translateY(-1px);
+}
+button:not(:disabled):active,
+.ref-primary:active,
+.ref-secondary:active {
+  transform: translateY(0) scale(.98);
+}
+
+/* Formulaires */
+input,
+select,
+textarea {
+  transition: border-color .2s ease, box-shadow .2s ease, background .2s ease !important;
+}
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #77d8bc !important;
+  box-shadow: var(--gm-ring) !important;
+}
+
+/* Tableaux */
+.module-v3-table tbody tr,
+.ref-row,
+table tbody tr {
+  transition: background .2s ease, box-shadow .2s ease, transform .2s var(--gm-ease) !important;
+}
+.module-v3-table tbody tr,
+.ref-row {
+  animation: gm-row-in .32s var(--gm-ease) both;
+}
+.module-v3-table tbody tr:hover,
+.ref-row:hover,
+table tbody tr:hover {
+  background: #f5fcf9 !important;
+  box-shadow: inset 3px 0 0 #00a878;
+}
+.module-v3-table tbody tr:hover,
+.ref-row:hover {
+  transform: translateX(2px);
+}
+
+.module-v3-table thead th,
+table thead th {
+  position: relative;
+}
+.module-v3-table thead th::after,
+table thead th::after {
+  content: "";
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: #00a878;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform .22s ease;
+}
+.module-v3-table thead th:hover::after,
+table thead th:hover::after { transform: scaleX(1); }
+
+/* Badges */
+.module-v3-badge,
+.status-badge,
+.badge,
+.page-kicker,
+.profile-badge {
+  animation: gm-pop .3s var(--gm-ease) both;
+  transition: transform .18s ease, box-shadow .18s ease !important;
+}
+.module-v3-badge:hover,
+.status-badge:hover,
+.badge:hover {
+  transform: translateY(-1px) scale(1.025);
+  box-shadow: 0 5px 14px rgba(0,127,95,.10);
+}
+
+/* Wizard */
+.wizard-step {
+  transition: transform .22s var(--gm-ease), background .22s ease, color .22s ease, box-shadow .22s ease !important;
+}
+.wizard-step.done:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--gm-shadow-xs);
+}
+.wizard-step.active {
+  box-shadow: 0 8px 20px rgba(0,168,120,.09);
+}
+.wizard-step > span {
+  transition: transform .22s var(--gm-ease), background .22s ease, color .22s ease;
+}
+.wizard-step.active > span { transform: scale(1.08); }
+
+/* Référentiels / images */
+.ref-actions button:hover { transform: translateY(-2px) scale(1.04) !important; }
+.ref-modal-backdrop { animation: gm-page-in .2s ease both; backdrop-filter: blur(4px); }
+.ref-modal { animation: gm-card-in .3s var(--gm-ease) both; }
+
+/* Login / inscription */
+.login-card,
+.auth-card { animation: gm-card-in .55s var(--gm-ease) both; }
+.login-card:hover,
+.auth-card:hover { box-shadow: 0 28px 70px rgba(6,61,50,.12) !important; }
+
+/* Scrollbar cohérente */
+* { scrollbar-width: thin; scrollbar-color: #77d8bc #eef5f2; }
+*::-webkit-scrollbar { width: 9px; height: 9px; }
+*::-webkit-scrollbar-track { background: #eef5f2; }
+*::-webkit-scrollbar-thumb { background: #77d8bc; border-radius: 999px; border: 2px solid #eef5f2; }
+*::-webkit-scrollbar-thumb:hover { background: #00a878; }
+
+/* Responsive */
+@media (max-width: 900px) {
+  .page-content,
+  .module-page-v3,
+  .profile-page,
+  .gamme-detail-page { padding: 20px !important; }
+}
+
+/* Accessibilité */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

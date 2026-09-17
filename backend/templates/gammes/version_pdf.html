@@ -1,0 +1,580 @@
+<!doctype html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+
+    <style>
+        @page {
+            size: A4;
+            margin: 14mm 16mm 16mm 16mm;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            font-size: 10pt;
+            color: #1f2937;
+            background: #ffffff;
+        }
+
+        .document-header {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+            border-bottom: 3px solid #16a34a;
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+
+        .header-main,
+        .header-qr {
+            display: table-cell;
+            vertical-align: top;
+        }
+
+        .header-main {
+            width: 78%;
+            padding-right: 12px;
+        }
+
+        .header-qr {
+            width: 22%;
+            text-align: center;
+        }
+
+        .title {
+            margin: 0 0 5px 0;
+            color: #14532d;
+            font-size: 20pt;
+            line-height: 1.15;
+        }
+
+        .designation {
+            margin: 0 0 6px 0;
+            color: #374151;
+            font-size: 11pt;
+            font-weight: 600;
+        }
+
+        .version-line {
+            display: inline-block;
+            background: #f0fdf4;
+            border: 1px solid #bbf7d0;
+            color: #166534;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 9pt;
+            font-weight: 700;
+        }
+
+        .qr-box {
+            border: 2px solid #16a34a;
+            border-radius: 6px;
+            padding: 6px;
+            background: #ffffff;
+        }
+
+        .qr-box img {
+            display: block;
+            width: 30mm;
+            height: 30mm;
+            margin: 0 auto 4px auto;
+        }
+
+        .qr-label {
+            color: #14532d;
+            font-size: 8pt;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .qr-code-label {
+            margin-top: 2px;
+            color: #64748b;
+            font-size: 7pt;
+        }
+
+        h2 {
+            margin-top: 14px;
+            margin-bottom: 7px;
+            color: #14532d;
+            font-size: 14pt;
+            border-bottom: 2px solid #dcfce7;
+            padding-bottom: 4px;
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .meta-item {
+            border: 1px solid #dcfce7;
+            background: #f0fdf4;
+            padding: 7px;
+            border-radius: 4px;
+        }
+
+        .meta-label {
+            color: #166534;
+            font-weight: 700;
+        }
+
+        .box {
+            border: 1px solid #d1d5db;
+            border-left: 4px solid #16a34a;
+            background: #ffffff;
+            padding: 8px;
+            margin: 8px 0;
+            page-break-inside: avoid;
+        }
+
+        .step-title {
+            color: #14532d;
+            font-size: 11pt;
+            font-weight: 700;
+        }
+
+        .step-duration {
+            color: #64748b;
+            font-size: 9pt;
+            margin-top: 3px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            page-break-inside: avoid;
+        }
+
+        th,
+        td {
+            border: 1px solid #d1d5db;
+            padding: 6px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        th {
+            color: #14532d;
+            background: #dcfce7;
+            font-weight: 700;
+        }
+
+        ol {
+            margin-top: 6px;
+            margin-bottom: 4px;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 4px;
+        }
+
+        .empty {
+            color: #64748b;
+            font-style: italic;
+        }
+
+        .footer {
+            position: fixed;
+            right: 0;
+            bottom: -9mm;
+            left: 0;
+            color: #64748b;
+            font-size: 8pt;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =====================================================
+         EN-TÊTE DE LA PREMIÈRE PAGE
+         Le QR est placé dans le coin supérieur droit.
+         ===================================================== -->
+
+    <div class="document-header">
+
+        <div class="header-main">
+
+            <h1 class="title">
+                Gamme opératoire — {{ version.gamme.code }}
+            </h1>
+
+            <p class="designation">
+                {{ version.gamme.designation }}
+            </p>
+
+            <span class="version-line">
+                {{ version.code_version }} · {{ statut_label }}
+            </span>
+
+        </div>
+
+        <div class="header-qr">
+
+            <div class="qr-box">
+
+                {% if qr_data_url %}
+                    <img
+                        src="{{ qr_data_url }}"
+                        alt="QR Code {{ version.gamme.code }}"
+                    >
+                {% else %}
+                    <div class="empty">
+                        QR indisponible
+                    </div>
+                {% endif %}
+
+                <div class="qr-label">
+                    Scanner la gamme
+                </div>
+
+                <div class="qr-code-label">
+                    {{ version.gamme.code }}
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         INFORMATIONS PRINCIPALES
+         ===================================================== -->
+
+    <div class="meta">
+
+        <div class="meta-item">
+            <span class="meta-label">Désignation :</span>
+            {{ version.gamme.designation }}
+        </div>
+
+        <div class="meta-item">
+            <span class="meta-label">Version :</span>
+            {{ version.code_version }}
+        </div>
+
+        <div class="meta-item">
+            <span class="meta-label">Statut :</span>
+            {{ statut_label }}
+        </div>
+
+        <div class="meta-item">
+            <span class="meta-label">Durée :</span>
+            {{ version.duree_minutes|default:0 }} min
+        </div>
+
+    </div>
+
+
+    <!-- =====================================================
+         MAINTENANCE
+         ===================================================== -->
+
+    <h2>Maintenance</h2>
+
+    <div class="box">
+
+        <strong>Type :</strong>
+        {{ type_maintenance_label|default:"-" }}
+
+        &nbsp;—&nbsp;
+
+        <strong>Périodicité :</strong>
+        {{ version.periodicite|default:"-" }}
+
+        &nbsp;—&nbsp;
+
+        <strong>Main-d'œuvre :</strong>
+        {{ version.main_oeuvre|default:0 }}
+
+        <br><br>
+
+        <strong>Référentiel :</strong>
+        {% if version.referentiel %}Oui{% else %}Non{% endif %}
+
+        &nbsp;—&nbsp;
+
+        <strong>Rapport :</strong>
+        {% if version.rapport %}Oui{% else %}Non{% endif %}
+
+        &nbsp;—&nbsp;
+
+        <strong>Production :</strong>
+        {% if version.production %}Oui{% else %}Non{% endif %}
+
+        &nbsp;—&nbsp;
+
+        <strong>Arrêt :</strong>
+        {% if version.arret %}Oui{% else %}Non{% endif %}
+
+        &nbsp;—&nbsp;
+
+        <strong>Mode dégradé :</strong>
+        {% if version.degrade %}Oui{% else %}Non{% endif %}
+
+    </div>
+
+
+    <!-- =====================================================
+         SÉCURITÉ
+         ===================================================== -->
+
+    <h2>Sécurité</h2>
+
+    <table>
+
+        <tr>
+            <th>Risques</th>
+            <th>EPI</th>
+        </tr>
+
+        <tr>
+
+            <td>
+
+                {% for x in version.version_risques.all %}
+
+                    {{ x.risque.nom }}
+
+                    {% if not forloop.last %}
+                        <br>
+                    {% endif %}
+
+                {% empty %}
+
+                    <span class="empty">
+                        Aucun risque renseigné
+                    </span>
+
+                {% endfor %}
+
+            </td>
+
+            <td>
+
+                {% for x in version.version_epis.all %}
+
+                    {{ x.epi.nom }}
+
+                    {% if not forloop.last %}
+                        <br>
+                    {% endif %}
+
+                {% empty %}
+
+                    <span class="empty">
+                        Aucun EPI renseigné
+                    </span>
+
+                {% endfor %}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- =====================================================
+         OUTILLAGES ET PIÈCES
+         ===================================================== -->
+
+    <h2>Moyens nécessaires</h2>
+
+    <table>
+
+        <tr>
+            <th>Outillages</th>
+            <th>Pièces de rechange</th>
+        </tr>
+
+        <tr>
+
+            <td>
+
+                {% for x in version.version_outillages.all %}
+
+                    {{ x.outillage.nom }}
+                    × {{ x.quantite|default:1 }}
+
+                    {% if not forloop.last %}
+                        <br>
+                    {% endif %}
+
+                {% empty %}
+
+                    <span class="empty">
+                        Aucun outillage renseigné
+                    </span>
+
+                {% endfor %}
+
+            </td>
+
+            <td>
+
+                {% for x in version.version_pieces_rechange.all %}
+
+                    {% if x.piece.code %}
+                        {{ x.piece.code }} -
+                    {% endif %}
+
+                    {{ x.piece.nom }}
+                    × {{ x.quantite|default:1 }}
+
+                    {% if not forloop.last %}
+                        <br>
+                    {% endif %}
+
+                {% empty %}
+
+                    <span class="empty">
+                        Aucune pièce renseignée
+                    </span>
+
+                {% endfor %}
+
+            </td>
+
+        </tr>
+
+    </table>
+
+
+    <!-- =====================================================
+         ÉTAPES ET ACTIONS
+         ===================================================== -->
+
+    <h2>Étapes &amp; actions</h2>
+
+    {% for step in version.etapes.all %}
+
+        <div class="box">
+
+            <div class="step-title">
+                {{ step.numero }}. {{ step.titre }}
+            </div>
+
+            <div class="step-duration">
+                Durée : {{ step.duree_minutes|default:0 }} min
+            </div>
+
+            {% if step.description %}
+                <p>{{ step.description }}</p>
+            {% endif %}
+
+            <ol>
+
+                {% for action in step.actions.all %}
+
+                    <li>
+                        {{ action.contenu }}
+                    </li>
+
+                {% empty %}
+
+                    <li class="empty">
+                        Aucune action renseignée
+                    </li>
+
+                {% endfor %}
+
+            </ol>
+
+        </div>
+
+    {% empty %}
+
+        <div class="box empty">
+            Aucune étape renseignée.
+        </div>
+
+    {% endfor %}
+
+
+    <!-- =====================================================
+         RECOMMANDATIONS
+         ===================================================== -->
+
+    <h2>Recommandations</h2>
+
+    {% for recommandation in version.recommandations.all %}
+
+        <div class="box">
+
+            {% if recommandation.titre %}
+                <strong>{{ recommandation.titre }}</strong>
+            {% endif %}
+
+            <p>
+                {{ recommandation.contenu }}
+            </p>
+
+        </div>
+
+    {% empty %}
+
+        <div class="box empty">
+            Aucune recommandation renseignée.
+        </div>
+
+    {% endfor %}
+
+
+    <!-- =====================================================
+         DOCUMENTS LIÉS
+         ===================================================== -->
+
+    <h2>Documents liés</h2>
+
+    {% for document in version.documents.all %}
+
+        <div class="box">
+
+            <strong>
+                {{ document.titre }}
+            </strong>
+
+            {% if document.reference %}
+                — Référence : {{ document.reference }}
+            {% endif %}
+
+            {% if document.description %}
+                <p>{{ document.description }}</p>
+            {% endif %}
+
+        </div>
+
+    {% empty %}
+
+        <div class="box empty">
+            Aucun document lié.
+        </div>
+
+    {% endfor %}
+
+
+    <!-- =====================================================
+         PIED DE PAGE
+         ===================================================== -->
+
+    <div class="footer">
+        Document généré automatiquement —
+        {{ version.gamme.code }}
+        {{ version.code_version }}
+    </div>
+
+</body>
+</html>

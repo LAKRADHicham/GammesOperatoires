@@ -1,0 +1,280 @@
+/* ============================================================
+   ANIMATIONS - PAGE VERSIONS
+   ============================================================ */
+
+@keyframes versionPageFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes versionCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.99);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes versionRowEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes versionBadgeEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+/* ============================================================
+   PAGE
+   ============================================================ */
+
+.module-page-v3 {
+  animation: versionPageFadeIn 0.45s ease-out;
+}
+
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+
+.module-v3-header h1 {
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.module-v3-header:hover h1 {
+  color: #007f5f;
+  transform: translateX(3px);
+}
+
+
+/* ============================================================
+   CARTE PRINCIPALE
+   ============================================================ */
+
+.module-v3-card {
+  animation: versionCardEnter 0.5s ease-out;
+
+  transition:
+    box-shadow 0.3s ease,
+    transform 0.3s ease,
+    border-color 0.3s ease;
+}
+
+.module-v3-card:hover {
+  transform: translateY(-2px);
+
+  border-color: #c7e7dc;
+
+  box-shadow:
+    0 14px 35px rgba(0, 91, 70, 0.08);
+}
+
+
+/* ============================================================
+   BARRE DE RECHERCHE
+   ============================================================ */
+
+.module-v3-search {
+  transition:
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.module-v3-search:focus-within {
+  border-color: #00a67e;
+
+  box-shadow:
+    0 0 0 3px rgba(0, 166, 126, 0.10);
+
+  transform: translateY(-1px);
+}
+
+.module-v3-search svg {
+  transition:
+    color 0.25s ease,
+    transform 0.25s ease;
+}
+
+.module-v3-search:focus-within svg {
+  color: #00966d;
+  transform: scale(1.08);
+}
+
+
+/* ============================================================
+   TABLEAU
+   ============================================================ */
+
+.module-v3-table tbody tr {
+  animation: versionRowEnter 0.35s ease-out both;
+
+  transition:
+    background-color 0.22s ease,
+    transform 0.22s ease,
+    box-shadow 0.22s ease;
+}
+
+
+/* Animation progressive des lignes */
+
+.module-v3-table tbody tr:nth-child(1) {
+  animation-delay: 0.04s;
+}
+
+.module-v3-table tbody tr:nth-child(2) {
+  animation-delay: 0.08s;
+}
+
+.module-v3-table tbody tr:nth-child(3) {
+  animation-delay: 0.12s;
+}
+
+.module-v3-table tbody tr:nth-child(4) {
+  animation-delay: 0.16s;
+}
+
+.module-v3-table tbody tr:nth-child(5) {
+  animation-delay: 0.20s;
+}
+
+.module-v3-table tbody tr:nth-child(6) {
+  animation-delay: 0.24s;
+}
+
+.module-v3-table tbody tr:nth-child(7) {
+  animation-delay: 0.28s;
+}
+
+.module-v3-table tbody tr:nth-child(8) {
+  animation-delay: 0.32s;
+}
+
+
+/* ============================================================
+   SURVOL D'UNE VERSION
+   ============================================================ */
+
+.module-v3-table tbody tr:hover {
+  background-color: #f3fbf8;
+
+  transform: translateX(3px);
+
+  box-shadow:
+    inset 3px 0 0 #00a67e;
+}
+
+
+/* ============================================================
+   NOM / CODE GAMME
+   ============================================================ */
+
+.module-v3-name {
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.module-v3-table tbody tr:hover .module-v3-name {
+  color: #007f5f;
+}
+
+
+/* ============================================================
+   BADGE STATUT
+   ============================================================ */
+
+.module-v3-badge {
+  animation: versionBadgeEnter 0.35s ease-out;
+
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.module-v3-badge:hover {
+  transform: translateY(-1px) scale(1.03);
+
+  box-shadow:
+    0 4px 10px rgba(0, 127, 95, 0.12);
+}
+
+
+/* ============================================================
+   HEADER TABLEAU
+   ============================================================ */
+
+.module-v3-table thead th {
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.module-v3-table thead th:hover {
+  background-color: #e5f7f0;
+  color: #006b51;
+}
+
+
+/* ============================================================
+   CHARGEMENT
+   ============================================================ */
+
+.module-v3-loading {
+  animation: versionPageFadeIn 0.5s ease-in-out;
+}
+
+
+/* ============================================================
+   ACCESSIBILITE
+   Désactive les animations si Windows / navigateur demande
+   une réduction des mouvements.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+
+  .module-page-v3,
+  .module-v3-card,
+  .module-v3-table tbody tr,
+  .module-v3-badge {
+    animation: none !important;
+  }
+
+  .module-v3-card,
+  .module-v3-search,
+  .module-v3-table tbody tr,
+  .module-v3-badge,
+  .module-v3-header h1 {
+    transition: none !important;
+  }
+}

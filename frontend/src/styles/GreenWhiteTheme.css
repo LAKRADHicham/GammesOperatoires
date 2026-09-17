@@ -1,0 +1,226 @@
+/* =========================================================
+   GAMMES MAINTENANCE — THÈME VERT TECHNIQUE V4
+   ========================================================= */
+
+:root {
+  --gm-green-950: #063D32;
+  --gm-green-900: #0B5746;
+  --gm-green-800: #006B52;
+  --gm-green-700: #007F5F;
+  --gm-green-600: #00966D;
+  --gm-green-500: #00A878;
+  --gm-green-300: #77D8BC;
+  --gm-green-200: #BDEBDD;
+  --gm-green-100: #DDF7EE;
+  --gm-green-50: #F1FBF7;
+
+  --gm-white: #FFFFFF;
+  --gm-bg: #F6F8FA;
+  --gm-surface: #FFFFFF;
+  --gm-border: #DDE7E3;
+  --gm-border-strong: #C7D8D2;
+  --gm-text: #172B2A;
+  --gm-muted: #667A74;
+
+  --gm-danger: #DC3545;
+  --gm-danger-soft: #FFF1F2;
+  --gm-warning: #D97706;
+  --gm-warning-soft: #FFF7E6;
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+
+  color: var(--gm-text);
+  background: var(--gm-bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+  background: var(--gm-bg);
+}
+
+body {
+  color: var(--gm-text);
+}
+
+a {
+  color: var(--gm-green-700);
+}
+
+a:hover {
+  color: var(--gm-green-950);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+/* =========================================================
+   TITRES
+   ========================================================= */
+
+h1,
+h2,
+h3 {
+  color: var(--gm-text);
+}
+
+/* =========================================================
+   SURFACES
+   ========================================================= */
+
+.card,
+.module-card,
+.dashboard-card,
+.stat-card,
+.detail-section,
+.edit-form,
+.qr-card {
+  background: var(--gm-surface);
+  border-color: var(--gm-border);
+}
+
+/* =========================================================
+   BOUTONS
+   ========================================================= */
+
+.btn-primary,
+.primary-button,
+.module-button-primary,
+.module-button-blue,
+.module-button-green,
+.wizard-next,
+.wizard-submit,
+.reference-add-button,
+.equipment-create {
+  background: var(--gm-green-600) !important;
+  border-color: var(--gm-green-600) !important;
+  color: var(--gm-white) !important;
+}
+
+.btn-primary:hover,
+.primary-button:hover,
+.module-button-primary:hover,
+.module-button-blue:hover,
+.module-button-green:hover,
+.wizard-next:hover,
+.wizard-submit:hover,
+.reference-add-button:hover,
+.equipment-create:hover {
+  background: var(--gm-green-700) !important;
+  border-color: var(--gm-green-700) !important;
+}
+
+/* =========================================================
+   FORMULAIRES
+   ========================================================= */
+
+input,
+select,
+textarea {
+  color: var(--gm-text);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--gm-green-500) !important;
+  box-shadow: 0 0 0 3px rgba(0, 168, 120, 0.12);
+}
+
+/* =========================================================
+   TABLEAUX
+   ========================================================= */
+
+table th {
+  background: var(--gm-green-50);
+  color: var(--gm-green-950);
+}
+
+table tbody tr:hover {
+  background: #FAFDFC;
+}
+
+/* =========================================================
+   BADGES
+   ========================================================= */
+
+.status-validee,
+.eq-active,
+.qr-valid,
+.status-badge.status-validee {
+  background: var(--gm-green-100) !important;
+  color: var(--gm-green-900) !important;
+}
+
+.status-brouillon {
+  background: #EEF7F4 !important;
+  color: #48645B !important;
+}
+
+.status-en_validation {
+  background: var(--gm-warning-soft) !important;
+  color: #A45B05 !important;
+}
+
+.status-archivee,
+.eq-inactive {
+  background: #EEF2F1 !important;
+  color: #6B7D77 !important;
+}
+
+/* =========================================================
+   ERREURS
+   ========================================================= */
+
+.module-error,
+.error-message {
+  background: var(--gm-danger-soft) !important;
+  color: #B42333 !important;
+}
+
+.danger,
+.btn-danger,
+.delete-button {
+  color: var(--gm-danger) !important;
+}
+
+/* =========================================================
+   SCROLLBAR
+   ========================================================= */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #9EDCCB #EEF4F2;
+}
+
+*::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #EEF4F2;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #9EDCCB;
+  border-radius: 999px;
+}
