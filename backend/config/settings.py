@@ -1,9 +1,4 @@
-# ============================================================
-# DJANGO SETTINGS
-# ============================================================
-
 import os
-
 from datetime import timedelta
 from pathlib import Path
 
@@ -11,84 +6,68 @@ from dotenv import load_dotenv
 
 
 # ============================================================
-# BASE DIRECTORY
+# BASE
 # ============================================================
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# ============================================================
-# CHARGEMENT DU FICHIER .env
-# ============================================================
-
-load_dotenv(
-    BASE_DIR / ".env"
-)
+load_dotenv(BASE_DIR / ".env")
 
 
 # ============================================================
-# SÉCURITÉ DJANGO
+# SECURITY
 # ============================================================
 
 SECRET_KEY = os.getenv(
-    "SECRET_KEY",
-    "django-insecure-development-key",
+    "DJANGO_SECRET_KEY",
+    "change-me-in-production",
 )
 
-
-DEBUG = (
-    os.getenv(
-        "DEBUG",
-        "True",
-    ).lower()
-    ==
-    "true"
-)
+DEBUG = os.getenv(
+    "DEBUG",
+    "True",
+).lower() == "true"
 
 
 # ============================================================
-# HOSTS
+# ALLOWED HOSTS
 # ============================================================
 
+# Hôtes toujours autorisés
 ALLOWED_HOSTS = [
     "127.0.0.1",
     "localhost",
+    ".vercel.app",
 ]
 
+# Hôtes supplémentaires définis dans l'environnement
+extra_allowed_hosts = [
+    host.strip()
+    for host in os.getenv("ALLOWED_HOSTS", "").split(",")
+    if host.strip()
+]
 
-# Permet d'ajouter des hosts depuis .env :
-#
-# ALLOWED_HOSTS=127.0.0.1,localhost,mon-domaine.com
+for host in extra_allowed_hosts:
+    # ALLOWED_HOSTS ne doit pas contenir https:// ou http://
+    host = host.replace("https://", "").replace("http://", "").rstrip("/")
 
-extra_allowed_hosts = os.getenv(
-    "ALLOWED_HOSTS",
-    "",
-)
-
-if extra_allowed_hosts:
-
-    for host in extra_allowed_hosts.split(","):
-
-        host = host.strip()
-
-        if (
-            host
-            and
-            host not in ALLOWED_HOSTS
-        ):
-            ALLOWED_HOSTS.append(
-                host
-            )
+    if host and host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(host)
 
 
-# ============================================================
-# GOOGLE OAUTH
-# ============================================================
+# Vercel fournit automatiquement VERCEL_URL
+VERCEL_URL = os.getenv("VERCEL_URL", "").strip()
 
-GOOGLE_CLIENT_ID = os.getenv(
-    "GOOGLE_CLIENT_ID",
-    "",
-)
+if VERCEL_URL:
+    vercel_host = (
+        VERCEL_URL
+        .replace("https://", "")
+        .replace("http://", "")
+        .rstrip("/")
+    )
+
+    if vercel_host not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(vercel_host)
 
 
 # ============================================================
@@ -96,11 +75,6 @@ GOOGLE_CLIENT_ID = os.getenv(
 # ============================================================
 
 INSTALLED_APPS = [
-
-    # --------------------------------------------------------
-    # DJANGO
-    # --------------------------------------------------------
-
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -108,26 +82,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-
-    # --------------------------------------------------------
-    # API
-    # --------------------------------------------------------
-
-    "rest_framework",
-
-    "rest_framework_simplejwt",
-
-
-    # --------------------------------------------------------
-    # CORS
-    # --------------------------------------------------------
-
     "corsheaders",
 
-
-    # --------------------------------------------------------
-    # APPLICATION
-    # --------------------------------------------------------
+    "rest_framework",
+    "rest_framework_simplejwt",
 
     "gammes_maintenance.apps.GammesMaintenanceConfig",
 ]
@@ -138,37 +96,28 @@ INSTALLED_APPS = [
 # ============================================================
 
 MIDDLEWARE = [
-
     "django.middleware.security.SecurityMiddleware",
-
-
-    # --------------------------------------------------------
-    # CORS
-    # Doit être placé avant CommonMiddleware.
-    # --------------------------------------------------------
 
     "corsheaders.middleware.CorsMiddleware",
 
-
     "django.contrib.sessions.middleware.SessionMiddleware",
-
     "django.middleware.common.CommonMiddleware",
-
     "django.middleware.csrf.CsrfViewMiddleware",
-
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-
     "django.contrib.messages.middleware.MessageMiddleware",
-
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 
 # ============================================================
-# URLS
+# URLS / WSGI / ASGI
 # ============================================================
 
 ROOT_URLCONF = "config.urls"
+
+WSGI_APPLICATION = "config.wsgi.application"
+
+ASGI_APPLICATION = "config.asgi.application"
 
 
 # ============================================================
@@ -177,127 +126,87 @@ ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        "BACKEND":
-            "django.template.backends.django.DjangoTemplates",
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
 
-        "DIRS":
-            [],
+        "DIRS": [
+            BASE_DIR / "templates"
+        ],
 
-        "APP_DIRS":
-            True,
+        "APP_DIRS": True,
 
         "OPTIONS": {
             "context_processors": [
-
                 "django.template.context_processors.request",
-
                 "django.contrib.auth.context_processors.auth",
-
                 "django.contrib.messages.context_processors.messages",
             ],
         },
-    },
+    }
 ]
 
 
 # ============================================================
-# WSGI
-# ============================================================
-
-WSGI_APPLICATION = "config.wsgi.application"
-
-
-# ============================================================
-# BASE DE DONNÉES POSTGRESQL / SUPABASE
+# DATABASE - SUPABASE POSTGRESQL
 # ============================================================
 
 DATABASES = {
-
     "default": {
+        "ENGINE": "django.db.backends.postgresql",
 
-        "ENGINE":
-            "django.db.backends.postgresql",
+        "NAME": os.getenv(
+            "DB_NAME",
+            "gammes_maintenance",
+        ),
 
-        "NAME":
-            os.getenv(
-                "DB_NAME",
-                "postgres",
-            ),
+        "USER": os.getenv(
+            "DB_USER",
+            "postgres",
+        ),
 
-        "USER":
-            os.getenv(
-                "DB_USER",
-                "postgres",
-            ),
+        "PASSWORD": os.getenv(
+            "DB_PASSWORD",
+            "postgres",
+        ),
 
-        "PASSWORD":
-            os.getenv(
-                "DB_PASSWORD",
-                "",
-            ),
+        "HOST": os.getenv(
+            "DB_HOST",
+            "127.0.0.1",
+        ),
 
-        "HOST":
-            os.getenv(
-                "DB_HOST",
-                "localhost",
-            ),
+        "PORT": os.getenv(
+            "DB_PORT",
+            "5432",
+        ),
 
-        "PORT":
-            os.getenv(
-                "DB_PORT",
-                "5432",
-            ),
-
-        # ----------------------------------------------------
-        # Important avec Supabase Pooler :
-        # évite de conserver inutilement les connexions
-        # pendant le développement.
-        # ----------------------------------------------------
-
-        "CONN_MAX_AGE":
-            int(
-                os.getenv(
-                    "DB_CONN_MAX_AGE",
-                    "0",
-                )
-            ),
+        "CONN_MAX_AGE": 60,
 
         "OPTIONS": {
-
-            "sslmode":
-                os.getenv(
-                    "DB_SSLMODE",
-                    "require",
-                ),
+            "sslmode": "require",
         },
-    },
+    }
 }
 
 
 # ============================================================
-# VALIDATION DES MOTS DE PASSE
+# PASSWORD VALIDATION
 # ============================================================
 
 AUTH_PASSWORD_VALIDATORS = [
-
     {
         "NAME":
-            "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
     },
-
     {
         "NAME":
-            "django.contrib.auth.password_validation.MinimumLengthValidator",
+        "django.contrib.auth.password_validation.MinimumLengthValidator"
     },
-
     {
         "NAME":
-            "django.contrib.auth.password_validation.CommonPasswordValidator",
+        "django.contrib.auth.password_validation.CommonPasswordValidator"
     },
-
     {
         "NAME":
-            "django.contrib.auth.password_validation.NumericPasswordValidator",
+        "django.contrib.auth.password_validation.NumericPasswordValidator"
     },
 ]
 
@@ -308,7 +217,10 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "fr-fr"
 
-TIME_ZONE = "Europe/Paris"
+TIME_ZONE = os.getenv(
+    "TIME_ZONE",
+    "Europe/Paris",
+)
 
 USE_I18N = True
 
@@ -316,133 +228,36 @@ USE_TZ = True
 
 
 # ============================================================
-# STATIC
+# STATIC / MEDIA
 # ============================================================
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 
-
-# ============================================================
-# MEDIA
-# ============================================================
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = BASE_DIR / "media"
 
-
-# ============================================================
-# PRIMARY KEY
-# ============================================================
-
-DEFAULT_AUTO_FIELD = (
-    "django.db.models.BigAutoField"
-)
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # ============================================================
-# DJANGO REST FRAMEWORK
-# ============================================================
-
-REST_FRAMEWORK = {
-
-    # --------------------------------------------------------
-    # JWT
-    # --------------------------------------------------------
-
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-
-    ),
-
-
-    # --------------------------------------------------------
-    # Par défaut les API nécessitent une authentification.
-    #
-    # register / login / google utilisent AllowAny
-    # directement dans auth_views.py.
-    # --------------------------------------------------------
-
-    "DEFAULT_PERMISSION_CLASSES": (
-
-        "rest_framework.permissions.IsAuthenticated",
-
-    ),
-
-
-    # --------------------------------------------------------
-    # JSON
-    # --------------------------------------------------------
-
-    "DEFAULT_RENDERER_CLASSES": (
-
-        "rest_framework.renderers.JSONRenderer",
-
-    ),
-
-
-    "DEFAULT_PARSER_CLASSES": (
-
-        "rest_framework.parsers.JSONParser",
-
-        "rest_framework.parsers.FormParser",
-
-        "rest_framework.parsers.MultiPartParser",
-
-    ),
-}
-
-
-# ============================================================
-# SIMPLE JWT
-# ============================================================
-
-SIMPLE_JWT = {
-
-    "ACCESS_TOKEN_LIFETIME":
-        timedelta(
-            minutes=60
-        ),
-
-    "REFRESH_TOKEN_LIFETIME":
-        timedelta(
-            days=7
-        ),
-
-    "ROTATE_REFRESH_TOKENS":
-        True,
-
-    "BLACKLIST_AFTER_ROTATION":
-        False,
-
-    "AUTH_HEADER_TYPES": (
-        "Bearer",
-    ),
-}
-
-
-# ============================================================
-# CORS - FRONTEND REACT / VITE
+# CORS
 # ============================================================
 
 CORS_ALLOWED_ORIGINS = [
-
-    "http://localhost:5173",
-
-    "http://127.0.0.1:5173",
-
+    origin.strip()
+    for origin in os.getenv(
+        "CORS_ALLOWED_ORIGINS",
+        "http://localhost:5173",
+    ).split(",")
+    if origin.strip()
 ]
 
-
-# ============================================================
-# CORS - VERCEL
-# ============================================================
-
+# Toutes les Preview URLs Vercel
 CORS_ALLOWED_ORIGIN_REGEXES = [
-
     r"^https://.*\.vercel\.app$",
-
 ]
 
 
@@ -451,77 +266,92 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
 # ============================================================
 
 CSRF_TRUSTED_ORIGINS = [
-
-    "http://localhost:5173",
-
-    "http://127.0.0.1:5173",
-
+    origin.strip()
+    for origin in os.getenv(
+        "CSRF_TRUSTED_ORIGINS",
+        "http://localhost:5173",
+    ).split(",")
+    if origin.strip()
 ]
 
+# Domaine production
+if "https://gammes-tawny.vercel.app" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(
+        "https://gammes-tawny.vercel.app"
+    )
+
+# Toutes les Preview URLs Vercel
+if "https://*.vercel.app" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(
+        "https://*.vercel.app"
+    )
+
 
 # ============================================================
-# AJOUT DES ORIGINES DEPUIS .env
-#
-# Exemple :
-#
-# CORS_ALLOWED_ORIGINS=https://mon-site.com
-# CSRF_TRUSTED_ORIGINS=https://mon-site.com
+# HTTPS / VERCEL PROXY
 # ============================================================
 
-extra_cors_origins = os.getenv(
-    "CORS_ALLOWED_ORIGINS",
-    "",
+SECURE_PROXY_SSL_HEADER = (
+    "HTTP_X_FORWARDED_PROTO",
+    "https",
 )
 
+USE_X_FORWARDED_HOST = True
 
-if extra_cors_origins:
-
-    for origin in extra_cors_origins.split(","):
-
-        origin = origin.strip()
-
-        if (
-            origin
-            and
-            origin not in CORS_ALLOWED_ORIGINS
-        ):
-
-            CORS_ALLOWED_ORIGINS.append(
-                origin
-            )
-
-
-extra_csrf_origins = os.getenv(
-    "CSRF_TRUSTED_ORIGINS",
-    "",
-)
-
-
-if extra_csrf_origins:
-
-    for origin in extra_csrf_origins.split(","):
-
-        origin = origin.strip()
-
-        if (
-            origin
-            and
-            origin not in CSRF_TRUSTED_ORIGINS
-        ):
-
-            CSRF_TRUSTED_ORIGINS.append(
-                origin
-            )
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 
 # ============================================================
-# TAILLE DES UPLOADS
+# DJANGO REST FRAMEWORK
 # ============================================================
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = (
-    10 * 1024 * 1024
-)
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
 
-FILE_UPLOAD_MAX_MEMORY_SIZE = (
-    10 * 1024 * 1024
+    "DEFAULT_PERMISSION_CLASSES": (
+        "rest_framework.permissions.IsAuthenticated",
+    ),
+
+    "DEFAULT_FILTER_BACKENDS": (
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ),
+
+    "DEFAULT_PAGINATION_CLASS":
+        "rest_framework.pagination.PageNumberPagination",
+
+    "PAGE_SIZE": 25,
+}
+
+
+# ============================================================
+# JWT
+# ============================================================
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME":
+        timedelta(minutes=60),
+
+    "REFRESH_TOKEN_LIFETIME":
+        timedelta(days=7),
+
+    "ROTATE_REFRESH_TOKENS":
+        True,
+
+    "BLACKLIST_AFTER_ROTATION":
+        False,
+}
+
+
+# ============================================================
+# APPLICATION URL
+# ============================================================
+
+APP_BASE_URL = os.getenv(
+    "APP_BASE_URL",
+    "http://localhost:5173",
 )

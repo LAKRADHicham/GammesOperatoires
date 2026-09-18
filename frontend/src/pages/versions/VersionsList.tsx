@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
-import { RefreshCw } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Eye, Filter, RefreshCw, Search } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import api from "../../api/axios";
 
@@ -40,6 +41,7 @@ type Version = {
   valideur?: string | null;
 
   modifications?: string | null;
+  duree_minutes?: number | null;
 };
 
 
@@ -80,7 +82,7 @@ const getVersionStatusLabel = (
       return "En cours de validation";
 
     case "validee":
-      return "En cours de modification";
+      return "Validée";
 
     case "archivee":
       return "Archivé";
@@ -173,7 +175,10 @@ function formatDate(
 // ============================================================
 
 export default function VersionsList() {
+  const navigate = useNavigate();
   const [versions, setVersions] = useState<Version[]>([]);
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("tous");
 
   const [gammesById, setGammesById] =
     useState<Record<string, Gamme>>({});
@@ -328,6 +333,37 @@ export default function VersionsList() {
     return "—";
   };
 
+
+  const getGamme = (version: Version): Gamme | null => {
+    if (typeof version.gamme === "object" && version.gamme !== null) {
+      return version.gamme;
+    }
+    return gammesById[version.gamme] ?? null;
+  };
+
+  const stats = useMemo(() => ({
+    total: versions.length,
+    brouillon: versions.filter((v) => v.statut === "brouillon").length,
+    validation: versions.filter((v) => v.statut === "en_validation").length,
+    validee: versions.filter((v) => v.statut === "validee").length,
+  }), [versions]);
+
+  const filteredVersions = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return versions.filter((version) => {
+      const gamme = getGamme(version);
+      const matchesStatus = statusFilter === "tous" || version.statut === statusFilter;
+      const haystack = [
+        gamme?.code,
+        gamme?.designation,
+        version.code_version,
+        version.redacteur,
+        version.valideur,
+        version.modifications,
+      ].filter(Boolean).join(" ").toLowerCase();
+      return matchesStatus && (!q || haystack.includes(q));
+    });
+  }, [versions, gammesById, search, statusFilter]);
 
   // ============================================================
   // INTERFACE
@@ -496,6 +532,67 @@ export default function VersionsList() {
       )}
 
 
+      <div style={{
+        display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+        gap: "14px", marginBottom: "18px"
+      }}>
+        {[
+          ["Total des versions", stats.total],
+          ["Brouillons", stats.brouillon],
+          ["En validation", stats.validation],
+          ["Validées", stats.validee],
+        ].map(([label, value]) => (
+          <div key={String(label)} style={{
+            background: "#FFFFFF", border: "1px solid #DDE7E3", borderRadius: "12px",
+            padding: "17px 18px", boxShadow: "0 4px 16px rgba(23,43,42,.04)"
+          }}>
+            <div style={{ color: "#6B7D79", fontSize: "12px", fontWeight: 600 }}>{label}</div>
+            <strong style={{ display: "block", marginTop: "6px", color: "#063D32", fontSize: "24px" }}>{value}</strong>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap",
+        marginBottom: "18px", padding: "14px", background: "#FFFFFF",
+        border: "1px solid #DDE7E3", borderRadius: "12px"
+      }}>
+        <div style={{ position: "relative", flex: "1 1 340px" }}>
+          <Search size={16} style={{ position: "absolute", left: "12px", top: "13px", color: "#80938E" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Rechercher par gamme, version, rédacteur, valideur..."
+            style={{
+              width: "100%", minHeight: "42px", boxSizing: "border-box",
+              padding: "0 12px 0 38px", border: "1px solid #DDE7E3",
+              borderRadius: "9px", outline: "none"
+            }}
+          />
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          <Filter size={16} color="#6B7D79" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            style={{
+              minHeight: "42px", padding: "0 34px 0 12px",
+              border: "1px solid #DDE7E3", borderRadius: "9px",
+              background: "#FFFFFF", color: "#344A46", fontWeight: 600
+            }}
+          >
+            <option value="tous">Tous les statuts</option>
+            <option value="brouillon">Brouillon</option>
+            <option value="en_validation">En validation</option>
+            <option value="validee">Validée</option>
+            <option value="archivee">Archivée</option>
+          </select>
+        </div>
+        <strong style={{ color: "#047857", fontSize: "13px" }}>
+          {filteredVersions.length} résultat{filteredVersions.length > 1 ? "s" : ""}
+        </strong>
+      </div>
+
       {/* ===================================================== */}
       {/* TABLEAU */}
       {/* ===================================================== */}
@@ -530,7 +627,7 @@ export default function VersionsList() {
             Chargement des versions...
           </div>
 
-        ) : versions.length === 0 ? (
+        ) : filteredVersions.length === 0 ? (
 
           <div
             style={{
@@ -649,6 +746,9 @@ export default function VersionsList() {
                     Valideur
                   </th>
 
+                  <th style={headerCellStyle}>Durée</th>
+                  <th style={headerCellStyle}>Actions</th>
+
                 </tr>
 
               </thead>
@@ -660,7 +760,7 @@ export default function VersionsList() {
 
               <tbody>
 
-                {versions.map(
+                {filteredVersions.map(
                   (version) => (
 
                     <tr
@@ -686,10 +786,11 @@ export default function VersionsList() {
                               "#063D32",
                           }}
                         >
-                          {getGammeCode(
-                            version
-                          )}
+                          {getGammeCode(version)}
                         </strong>
+                        <div style={{ marginTop: "4px", color: "#6B7D79", fontSize: "12px" }}>
+                          {getGamme(version)?.designation || "—"}
+                        </div>
 
                       </td>
 
@@ -799,6 +900,29 @@ export default function VersionsList() {
                       >
                         {version.valideur ||
                           "—"}
+                      </td>
+
+                      <td style={bodyCellStyle}>
+                        {version.duree_minutes != null ? `${version.duree_minutes} min` : "—"}
+                      </td>
+
+                      <td style={bodyCellStyle}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const gamme = getGamme(version);
+                            if (gamme?.id) navigate(`/gammes/${gamme.id}`);
+                          }}
+                          disabled={!getGamme(version)?.id}
+                          style={{
+                            minHeight: "36px", padding: "0 12px", borderRadius: "8px",
+                            border: "1px solid #B7E4D5", background: "#ECFDF5",
+                            color: "#047857", fontWeight: 700, cursor: "pointer",
+                            display: "inline-flex", alignItems: "center", gap: "6px"
+                          }}
+                        >
+                          <Eye size={15} /> Consulter
+                        </button>
                       </td>
 
                     </tr>

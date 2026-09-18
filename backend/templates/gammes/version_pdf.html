@@ -1,580 +1,287 @@
 <!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="utf-8">
-
-    <style>
-        @page {
-            size: A4;
-            margin: 14mm 16mm 16mm 16mm;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            font-size: 10pt;
-            color: #1f2937;
-            background: #ffffff;
-        }
-
-        .document-header {
-            display: table;
-            width: 100%;
-            table-layout: fixed;
-            border-bottom: 3px solid #16a34a;
-            padding-bottom: 8px;
-            margin-bottom: 12px;
-        }
-
-        .header-main,
-        .header-qr {
-            display: table-cell;
-            vertical-align: top;
-        }
-
-        .header-main {
-            width: 78%;
-            padding-right: 12px;
-        }
-
-        .header-qr {
-            width: 22%;
-            text-align: center;
-        }
-
-        .title {
-            margin: 0 0 5px 0;
-            color: #14532d;
-            font-size: 20pt;
-            line-height: 1.15;
-        }
-
-        .designation {
-            margin: 0 0 6px 0;
-            color: #374151;
-            font-size: 11pt;
-            font-weight: 600;
-        }
-
-        .version-line {
-            display: inline-block;
-            background: #f0fdf4;
-            border: 1px solid #bbf7d0;
-            color: #166534;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 9pt;
-            font-weight: 700;
-        }
-
-        .qr-box {
-            border: 2px solid #16a34a;
-            border-radius: 6px;
-            padding: 6px;
-            background: #ffffff;
-        }
-
-        .qr-box img {
-            display: block;
-            width: 30mm;
-            height: 30mm;
-            margin: 0 auto 4px auto;
-        }
-
-        .qr-label {
-            color: #14532d;
-            font-size: 8pt;
-            font-weight: 700;
-            line-height: 1.2;
-        }
-
-        .qr-code-label {
-            margin-top: 2px;
-            color: #64748b;
-            font-size: 7pt;
-        }
-
-        h2 {
-            margin-top: 14px;
-            margin-bottom: 7px;
-            color: #14532d;
-            font-size: 14pt;
-            border-bottom: 2px solid #dcfce7;
-            padding-bottom: 4px;
-        }
-
-        .meta {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
-            margin-bottom: 10px;
-        }
-
-        .meta-item {
-            border: 1px solid #dcfce7;
-            background: #f0fdf4;
-            padding: 7px;
-            border-radius: 4px;
-        }
-
-        .meta-label {
-            color: #166534;
-            font-weight: 700;
-        }
-
-        .box {
-            border: 1px solid #d1d5db;
-            border-left: 4px solid #16a34a;
-            background: #ffffff;
-            padding: 8px;
-            margin: 8px 0;
-            page-break-inside: avoid;
-        }
-
-        .step-title {
-            color: #14532d;
-            font-size: 11pt;
-            font-weight: 700;
-        }
-
-        .step-duration {
-            color: #64748b;
-            font-size: 9pt;
-            margin-top: 3px;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            page-break-inside: avoid;
-        }
-
-        th,
-        td {
-            border: 1px solid #d1d5db;
-            padding: 6px;
-            text-align: left;
-            vertical-align: top;
-        }
-
-        th {
-            color: #14532d;
-            background: #dcfce7;
-            font-weight: 700;
-        }
-
-        ol {
-            margin-top: 6px;
-            margin-bottom: 4px;
-            padding-left: 20px;
-        }
-
-        li {
-            margin-bottom: 4px;
-        }
-
-        .empty {
-            color: #64748b;
-            font-style: italic;
-        }
-
-        .footer {
-            position: fixed;
-            right: 0;
-            bottom: -9mm;
-            left: 0;
-            color: #64748b;
-            font-size: 8pt;
-            text-align: center;
-        }
-    </style>
+<meta charset="utf-8">
+<style>
+@page {
+    size: A4;
+    margin: 14mm 14mm 17mm 14mm;
+    @bottom-right {
+        content: "Page " counter(page) " / " counter(pages);
+        color: #64748b;
+        font-size: 7.5pt;
+    }
+}
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 9.2pt;
+    line-height: 1.38;
+    color: #1f2937;
+    background: #fff;
+}
+.document-header {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+    border: 1px solid #d1fae5;
+    border-top: 5px solid #15803d;
+    padding: 10px 11px;
+    margin-bottom: 10px;
+    background: #f8fffa;
+}
+.header-main,.header-qr { display: table-cell; vertical-align: middle; }
+.header-main { width: 78%; padding-right: 12px; }
+.header-qr { width: 22%; text-align: center; }
+.eyebrow {
+    margin-bottom: 4px; color: #15803d; font-size: 7.5pt;
+    font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
+}
+.title { margin: 0 0 4px; color: #14532d; font-size: 18pt; line-height: 1.12; }
+.designation { margin: 0 0 7px; color: #374151; font-size: 10.5pt; font-weight: 600; }
+.version-line {
+    display: inline-block; padding: 3px 8px; border: 1px solid #86efac;
+    border-radius: 10px; background: #dcfce7; color: #166534;
+    font-size: 8pt; font-weight: 700;
+}
+.qr-box { border: 1px solid #86efac; border-radius: 7px; padding: 5px; background: #fff; }
+.qr-box img { display:block; width:27mm; height:27mm; margin:0 auto 3px; }
+.qr-label { color:#166534; font-size:7.5pt; font-weight:700; }
+.qr-code-label { color:#64748b; font-size:6.8pt; margin-top:1px; }
+.section-title {
+    display: table; width: 100%; margin: 12px 0 6px;
+    page-break-after: avoid;
+}
+.section-title .number,.section-title h2 { display: table-cell; vertical-align: middle; }
+.section-title .number {
+    width: 23px; height: 23px; text-align:center; color:#fff;
+    background:#15803d; border-radius:50%; font-size:8pt; font-weight:700;
+}
+.section-title h2 {
+    margin:0; padding-left:7px; color:#14532d; font-size:12pt;
+    border-bottom:1px solid #bbf7d0; padding-bottom:3px;
+}
+.meta { display: table; width:100%; table-layout:fixed; border-collapse:separate; border-spacing:4px; margin:0 -4px 7px; }
+.meta-row { display:table-row; }
+.meta-item {
+    display:table-cell; width:50%; border:1px solid #dcfce7;
+    background:#f0fdf4; padding:6px 7px; vertical-align:top;
+}
+.meta-label { display:block; color:#166534; font-size:7.2pt; font-weight:700; text-transform:uppercase; margin-bottom:2px; }
+.meta-value { font-weight:600; color:#1f2937; }
+.info-strip {
+    border-left:4px solid #16a34a; background:#f8fafc; padding:7px 9px;
+    margin:6px 0; page-break-inside:avoid;
+}
+.kpi-grid { display:table; width:100%; table-layout:fixed; border-spacing:5px; margin:0 -5px; }
+.kpi { display:table-cell; text-align:center; border:1px solid #d1fae5; padding:6px; background:#fff; }
+.kpi strong { display:block; color:#14532d; font-size:11pt; }
+.kpi span { color:#64748b; font-size:7.2pt; }
+table { width:100%; border-collapse:collapse; margin:4px 0 7px; }
+thead { display:table-header-group; }
+tr { page-break-inside:avoid; }
+th,td { border:1px solid #dbe4df; padding:5px 6px; text-align:left; vertical-align:top; }
+th { background:#dcfce7; color:#14532d; font-size:8pt; font-weight:700; }
+.box {
+    border:1px solid #dbe4df; border-left:4px solid #22c55e;
+    background:#fff; padding:7px 8px; margin:6px 0; page-break-inside:avoid;
+}
+.step-box {
+    border:1px solid #cbd5e1; margin:7px 0 9px; page-break-inside:avoid; background:#fff;
+}
+.step-header { display:table; width:100%; background:#f0fdf4; border-bottom:1px solid #d1fae5; padding:6px 8px; }
+.step-number,.step-heading,.step-time { display:table-cell; vertical-align:middle; }
+.step-number {
+    width:22px; height:22px; text-align:center; background:#15803d; color:#fff;
+    border-radius:50%; font-weight:700;
+}
+.step-heading { padding-left:7px; color:#14532d; font-weight:700; font-size:10pt; }
+.step-time { width:70px; text-align:right; color:#64748b; font-size:8pt; }
+.step-content { padding:6px 9px 7px; }
+ol { margin:5px 0 2px; padding-left:20px; }
+li { margin-bottom:3px; }
+.empty { color:#94a3b8; font-style:italic; }
+.badge-yes,.badge-no {
+    display:inline-block; min-width:24px; text-align:center; padding:1px 5px;
+    border-radius:8px; font-size:7pt; font-weight:700;
+}
+.badge-yes { background:#dcfce7; color:#166534; }
+.badge-no { background:#f1f5f9; color:#64748b; }
+.footer {
+    position:fixed; left:0; right:0; bottom:-10mm; border-top:1px solid #e2e8f0;
+    padding-top:3px; color:#64748b; font-size:7pt;
+}
+.footer-left { float:left; }
+.footer-center { text-align:center; }
+.small { color:#64748b; font-size:7.5pt; }
+.main-image { margin:7px 0 9px; text-align:center; page-break-inside:avoid; }
+.main-image img { max-width:100%; max-height:92mm; object-fit:contain; border:1px solid #dbe4df; padding:3px; background:#fff; }
+.safety-grid { display:table; width:100%; table-layout:fixed; border-spacing:5px; margin:0 -5px 7px; }
+.safety-card { display:table-cell; text-align:center; vertical-align:top; border:1px solid #e2e8f0; padding:5px; }
+.safety-card img { width:18mm; height:18mm; object-fit:contain; display:block; margin:0 auto 3px; }
+.safety-card strong { display:block; font-size:7.4pt; color:#334155; }
+.step-images { text-align:center; margin:7px 0 2px; }
+.step-image { display:inline-block; width:47%; margin:1%; vertical-align:top; page-break-inside:avoid; }
+.step-image img { max-width:100%; max-height:85mm; object-fit:contain; border:1px solid #dbe4df; padding:2px; }
+.step-image-caption { color:#64748b; font-size:7pt; margin-top:2px; }
+</style>
 </head>
-
 <body>
-
-    <!-- =====================================================
-         EN-TÊTE DE LA PREMIÈRE PAGE
-         Le QR est placé dans le coin supérieur droit.
-         ===================================================== -->
-
-    <div class="document-header">
-
-        <div class="header-main">
-
-            <h1 class="title">
-                Gamme opératoire — {{ version.gamme.code }}
-            </h1>
-
-            <p class="designation">
-                {{ version.gamme.designation }}
-            </p>
-
-            <span class="version-line">
-                {{ version.code_version }} · {{ statut_label }}
-            </span>
-
-        </div>
-
-        <div class="header-qr">
-
-            <div class="qr-box">
-
-                {% if qr_data_url %}
-                    <img
-                        src="{{ qr_data_url }}"
-                        alt="QR Code {{ version.gamme.code }}"
-                    >
-                {% else %}
-                    <div class="empty">
-                        QR indisponible
-                    </div>
-                {% endif %}
-
-                <div class="qr-label">
-                    Scanner la gamme
-                </div>
-
-                <div class="qr-code-label">
-                    {{ version.gamme.code }}
-                </div>
-
-            </div>
-
-        </div>
-
+<div class="document-header">
+  <div class="header-main">
+    <div class="eyebrow">Gamme opératoire de maintenance</div>
+    <h1 class="title">{{ version.gamme.code }}</h1>
+    <p class="designation">{{ version.gamme.designation }}</p>
+    <span class="version-line">{{ version.code_version }} · {{ statut_label }}</span>
+  </div>
+  <div class="header-qr">
+    <div class="qr-box">
+      {% if qr_data_url %}
+        <img src="{{ qr_data_url }}" alt="QR Code {{ version.gamme.code }}">
+      {% else %}
+        <div class="empty">QR indisponible</div>
+      {% endif %}
+      <div class="qr-label">Accès à la gamme</div>
+      <div class="qr-code-label">{{ version.gamme.code }}</div>
     </div>
+  </div>
+</div>
 
+<div class="section-title"><span class="number">1</span><h2>Identification</h2></div>
+<div class="meta">
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Code gamme</span><span class="meta-value">{{ version.gamme.code }}</span></div>
+    <div class="meta-item"><span class="meta-label">Version</span><span class="meta-value">{{ version.code_version }}</span></div>
+  </div>
+  <div class="meta-row">
+    <div class="meta-item"><span class="meta-label">Désignation</span><span class="meta-value">{{ version.gamme.designation }}</span></div>
+    <div class="meta-item"><span class="meta-label">Statut</span><span class="meta-value">{{ statut_label }}</span></div>
+  </div>
+</div>
+{% if version.gamme.image_url %}
+<div class="main-image">
+  <img src="{{ version.gamme.image_url }}" alt="{{ version.gamme.designation }}">
+</div>
+{% endif %}
 
-    <!-- =====================================================
-         INFORMATIONS PRINCIPALES
-         ===================================================== -->
+<div class="section-title"><span class="number">2</span><h2>Paramètres de maintenance</h2></div>
+<div class="kpi-grid">
+  <div class="kpi"><strong>{{ type_maintenance_label|default:"-" }}</strong><span>Type de maintenance</span></div>
+  <div class="kpi"><strong>{{ version.periodicite|default:"-" }}</strong><span>Périodicité</span></div>
+  <div class="kpi"><strong>{{ version.main_oeuvre|default:0 }}</strong><span>Main-d'œuvre</span></div>
+  <div class="kpi"><strong>{{ version.duree_minutes|default:0 }} min</strong><span>Durée totale</span></div>
+</div>
+<table>
+  <thead><tr><th>Référentiel</th><th>Rapport</th><th>Production</th><th>Arrêt</th><th>Mode dégradé</th></tr></thead>
+  <tbody><tr>
+    <td>{% if version.referentiel %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
+    <td>{% if version.rapport %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
+    <td>{% if version.production %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
+    <td>{% if version.arret %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
+    <td>{% if version.degrade %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
+  </tr></tbody>
+</table>
 
-    <div class="meta">
+<div class="section-title"><span class="number">3</span><h2>Sécurité & prévention</h2></div>
+<table>
+  <thead><tr><th>Risques identifiés</th><th>Équipements de protection individuelle (EPI)</th></tr></thead>
+  <tbody><tr>
+    <td>{% for x in version.version_risques.all %}{{ x.risque.nom }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="empty">Aucun risque renseigné</span>{% endfor %}</td>
+    <td>{% for x in version.version_epis.all %}{{ x.epi.nom }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="empty">Aucun EPI renseigné</span>{% endfor %}</td>
+  </tr></tbody>
+</table>
 
-        <div class="meta-item">
-            <span class="meta-label">Désignation :</span>
-            {{ version.gamme.designation }}
-        </div>
+{% if version.version_epis.all %}
+<div class="safety-grid">
+{% for x in version.version_epis.all %}
+  <div class="safety-card">
+    {% if x.epi.image_url %}<img src="{{ x.epi.image_url }}" alt="{{ x.epi.nom }}">{% endif %}
+    <strong>{{ x.epi.nom }}</strong>
+  </div>
+  {% if forloop.counter|divisibleby:4 and not forloop.last %}</div><div class="safety-grid">{% endif %}
+{% endfor %}
+</div>
+{% endif %}
 
-        <div class="meta-item">
-            <span class="meta-label">Version :</span>
-            {{ version.code_version }}
-        </div>
+{% if version.version_risques.all %}
+<div class="safety-grid">
+{% for x in version.version_risques.all %}
+  <div class="safety-card">
+    {% if x.risque.image_url %}<img src="{{ x.risque.image_url }}" alt="{{ x.risque.nom }}">{% endif %}
+    <strong>{{ x.risque.nom }}</strong>
+  </div>
+  {% if forloop.counter|divisibleby:4 and not forloop.last %}</div><div class="safety-grid">{% endif %}
+{% endfor %}
+</div>
+{% endif %}
 
-        <div class="meta-item">
-            <span class="meta-label">Statut :</span>
-            {{ statut_label }}
-        </div>
+<div class="section-title"><span class="number">4</span><h2>Moyens nécessaires</h2></div>
+<table>
+  <thead><tr><th>Outillages</th><th>Pièces de rechange</th></tr></thead>
+  <tbody><tr>
+    <td>{% for x in version.version_outillages.all %}<strong>{{ x.outillage.nom }}</strong> <span class="small">× {{ x.quantite|default:1 }}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="empty">Aucun outillage renseigné</span>{% endfor %}</td>
+    <td>{% for x in version.version_pieces_rechange.all %}{% if x.piece.code %}<span class="small">{{ x.piece.code }} — </span>{% endif %}<strong>{{ x.piece.nom }}</strong> <span class="small">× {{ x.quantite|default:1 }}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="empty">Aucune pièce renseignée</span>{% endfor %}</td>
+  </tr></tbody>
+</table>
 
-        <div class="meta-item">
-            <span class="meta-label">Durée :</span>
-            {{ version.duree_minutes|default:0 }} min
-        </div>
-
+<div class="section-title"><span class="number">5</span><h2>Mode opératoire — étapes & actions</h2></div>
+{% for step in version.etapes.all %}
+<div class="step-box">
+  <div class="step-header">
+    <span class="step-number">{{ step.numero }}</span>
+    <span class="step-heading">{{ step.titre }}</span>
+    <span class="step-time">{{ step.duree_minutes|default:0 }} min</span>
+  </div>
+  <div class="step-content">
+    {% if step.description %}<div class="info-strip">{{ step.description }}</div>{% endif %}
+    <ol>
+      {% for action in step.actions.all %}
+        <li>{{ action.contenu }}</li>
+      {% empty %}
+        <li class="empty">Aucune action renseignée</li>
+      {% endfor %}
+    </ol>
+    {% if step.images.all %}
+    <div class="step-images">
+      {% for image in step.images.all %}
+      <div class="step-image">
+        <img src="{{ image.image_url }}" alt="Étape {{ step.numero }}">
+        {% if image.description %}<div class="step-image-caption">{{ image.description }}</div>{% endif %}
+      </div>
+      {% endfor %}
     </div>
-
-
-    <!-- =====================================================
-         MAINTENANCE
-         ===================================================== -->
-
-    <h2>Maintenance</h2>
-
-    <div class="box">
-
-        <strong>Type :</strong>
-        {{ type_maintenance_label|default:"-" }}
-
-        &nbsp;—&nbsp;
-
-        <strong>Périodicité :</strong>
-        {{ version.periodicite|default:"-" }}
-
-        &nbsp;—&nbsp;
-
-        <strong>Main-d'œuvre :</strong>
-        {{ version.main_oeuvre|default:0 }}
-
-        <br><br>
-
-        <strong>Référentiel :</strong>
-        {% if version.referentiel %}Oui{% else %}Non{% endif %}
-
-        &nbsp;—&nbsp;
-
-        <strong>Rapport :</strong>
-        {% if version.rapport %}Oui{% else %}Non{% endif %}
-
-        &nbsp;—&nbsp;
-
-        <strong>Production :</strong>
-        {% if version.production %}Oui{% else %}Non{% endif %}
-
-        &nbsp;—&nbsp;
-
-        <strong>Arrêt :</strong>
-        {% if version.arret %}Oui{% else %}Non{% endif %}
-
-        &nbsp;—&nbsp;
-
-        <strong>Mode dégradé :</strong>
-        {% if version.degrade %}Oui{% else %}Non{% endif %}
-
-    </div>
-
-
-    <!-- =====================================================
-         SÉCURITÉ
-         ===================================================== -->
-
-    <h2>Sécurité</h2>
-
-    <table>
-
-        <tr>
-            <th>Risques</th>
-            <th>EPI</th>
-        </tr>
-
-        <tr>
-
-            <td>
-
-                {% for x in version.version_risques.all %}
-
-                    {{ x.risque.nom }}
-
-                    {% if not forloop.last %}
-                        <br>
-                    {% endif %}
-
-                {% empty %}
-
-                    <span class="empty">
-                        Aucun risque renseigné
-                    </span>
-
-                {% endfor %}
-
-            </td>
-
-            <td>
-
-                {% for x in version.version_epis.all %}
-
-                    {{ x.epi.nom }}
-
-                    {% if not forloop.last %}
-                        <br>
-                    {% endif %}
-
-                {% empty %}
-
-                    <span class="empty">
-                        Aucun EPI renseigné
-                    </span>
-
-                {% endfor %}
-
-            </td>
-
-        </tr>
-
-    </table>
-
-
-    <!-- =====================================================
-         OUTILLAGES ET PIÈCES
-         ===================================================== -->
-
-    <h2>Moyens nécessaires</h2>
-
-    <table>
-
-        <tr>
-            <th>Outillages</th>
-            <th>Pièces de rechange</th>
-        </tr>
-
-        <tr>
-
-            <td>
-
-                {% for x in version.version_outillages.all %}
-
-                    {{ x.outillage.nom }}
-                    × {{ x.quantite|default:1 }}
-
-                    {% if not forloop.last %}
-                        <br>
-                    {% endif %}
-
-                {% empty %}
-
-                    <span class="empty">
-                        Aucun outillage renseigné
-                    </span>
-
-                {% endfor %}
-
-            </td>
-
-            <td>
-
-                {% for x in version.version_pieces_rechange.all %}
-
-                    {% if x.piece.code %}
-                        {{ x.piece.code }} -
-                    {% endif %}
-
-                    {{ x.piece.nom }}
-                    × {{ x.quantite|default:1 }}
-
-                    {% if not forloop.last %}
-                        <br>
-                    {% endif %}
-
-                {% empty %}
-
-                    <span class="empty">
-                        Aucune pièce renseignée
-                    </span>
-
-                {% endfor %}
-
-            </td>
-
-        </tr>
-
-    </table>
-
-
-    <!-- =====================================================
-         ÉTAPES ET ACTIONS
-         ===================================================== -->
-
-    <h2>Étapes &amp; actions</h2>
-
-    {% for step in version.etapes.all %}
-
-        <div class="box">
-
-            <div class="step-title">
-                {{ step.numero }}. {{ step.titre }}
-            </div>
-
-            <div class="step-duration">
-                Durée : {{ step.duree_minutes|default:0 }} min
-            </div>
-
-            {% if step.description %}
-                <p>{{ step.description }}</p>
-            {% endif %}
-
-            <ol>
-
-                {% for action in step.actions.all %}
-
-                    <li>
-                        {{ action.contenu }}
-                    </li>
-
-                {% empty %}
-
-                    <li class="empty">
-                        Aucune action renseignée
-                    </li>
-
-                {% endfor %}
-
-            </ol>
-
-        </div>
-
-    {% empty %}
-
-        <div class="box empty">
-            Aucune étape renseignée.
-        </div>
-
-    {% endfor %}
-
-
-    <!-- =====================================================
-         RECOMMANDATIONS
-         ===================================================== -->
-
-    <h2>Recommandations</h2>
-
-    {% for recommandation in version.recommandations.all %}
-
-        <div class="box">
-
-            {% if recommandation.titre %}
-                <strong>{{ recommandation.titre }}</strong>
-            {% endif %}
-
-            <p>
-                {{ recommandation.contenu }}
-            </p>
-
-        </div>
-
-    {% empty %}
-
-        <div class="box empty">
-            Aucune recommandation renseignée.
-        </div>
-
-    {% endfor %}
-
-
-    <!-- =====================================================
-         DOCUMENTS LIÉS
-         ===================================================== -->
-
-    <h2>Documents liés</h2>
-
-    {% for document in version.documents.all %}
-
-        <div class="box">
-
-            <strong>
-                {{ document.titre }}
-            </strong>
-
-            {% if document.reference %}
-                — Référence : {{ document.reference }}
-            {% endif %}
-
-            {% if document.description %}
-                <p>{{ document.description }}</p>
-            {% endif %}
-
-        </div>
-
-    {% empty %}
-
-        <div class="box empty">
-            Aucun document lié.
-        </div>
-
-    {% endfor %}
-
-
-    <!-- =====================================================
-         PIED DE PAGE
-         ===================================================== -->
-
-    <div class="footer">
-        Document généré automatiquement —
-        {{ version.gamme.code }}
-        {{ version.code_version }}
-    </div>
-
+    {% endif %}
+  </div>
+</div>
+{% empty %}
+<div class="box empty">Aucune étape renseignée.</div>
+{% endfor %}
+
+<div class="section-title"><span class="number">6</span><h2>Recommandations particulières</h2></div>
+{% for recommandation in version.recommandations.all %}
+<div class="box">
+  {% if recommandation.titre %}<strong>{{ recommandation.titre }}</strong>{% endif %}
+  <div>{{ recommandation.contenu }}</div>
+</div>
+{% empty %}
+<div class="box empty">Aucune recommandation renseignée.</div>
+{% endfor %}
+
+<div class="section-title"><span class="number">7</span><h2>Documents liés</h2></div>
+{% for document in version.documents.all %}
+<div class="box">
+  <strong>{{ document.titre }}</strong>
+  {% if document.reference %}<span class="small"> — Réf. {{ document.reference }}</span>{% endif %}
+  {% if document.description %}<div class="small">{{ document.description }}</div>{% endif %}
+</div>
+{% empty %}
+<div class="box empty">Aucun document lié.</div>
+{% endfor %}
+
+<div class="footer">
+  <span class="footer-left">{{ version.gamme.code }} · {{ version.code_version }}</span>
+  <div class="footer-center">Document généré automatiquement — Gamme opératoire de maintenance</div>
+</div>
 </body>
 </html>

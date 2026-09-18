@@ -32,6 +32,26 @@ type PaginatedResponse<T> = {
   results: T[];
 };
 
+type Equipement = {
+  id: string;
+  code?: string | null;
+  nom: string;
+  batiment?: string | null;
+  etage?: string | null;
+  local?: string | null;
+  domaine?: string | null;
+  reference?: string | null;
+  quantite?: number | null;
+  constructeur?: string | null;
+  modele?: string | null;
+  gamme_job_plan?: string | null;
+  date_intervention?: string | null;
+  workorder_genere_par?: string | null;
+  type?: string | null;
+  description?: string | null;
+  actif?: boolean;
+};
+
 type SimpleRef = {
   id: string;
   nom: string;
@@ -85,6 +105,16 @@ type FormState = {
   equipement_constructeur: string;
   equipement_type: string;
   equipement_reference: string;
+  equipement_batiment: string;
+  equipement_etage: string;
+  equipement_local: string;
+  equipement_domaine: string;
+  equipement_quantite: number;
+  equipement_modele: string;
+  equipement_gamme_job_plan: string;
+  equipement_date_intervention: string;
+  equipement_workorder_genere_par: string;
+  equipement_description: string;
   corps_metier: string;
   type_redaction: string;
   image_url: string;
@@ -105,6 +135,16 @@ const initialForm: FormState = {
   equipement_constructeur: "",
   equipement_type: "",
   equipement_reference: "",
+  equipement_batiment: "",
+  equipement_etage: "",
+  equipement_local: "",
+  equipement_domaine: "",
+  equipement_quantite: 1,
+  equipement_modele: "",
+  equipement_gamme_job_plan: "",
+  equipement_date_intervention: "",
+  equipement_workorder_genere_par: "",
+  equipement_description: "",
   corps_metier: "",
   type_redaction: "",
   image_url: "",
@@ -117,11 +157,13 @@ const initialForm: FormState = {
 };
 
 const wizardSteps = [
-  "Informations",
-  "Maintenance",
-  "Sécurité",
-  "Moyens",
-  "Étapes",
+  "Informations générales",
+  "Équipement",
+  "Périodicité & maintenance",
+  "Moyens & pièces",
+  "Documents & recommandations",
+  "Sécurité & risques",
+  "Actions & images",
   "Vérification",
 ];
 
@@ -228,7 +270,9 @@ function formatApiError(data: unknown): string | null {
  * Wizard principal de création d'une gamme opératoire.
  *
  * Les données saisies restent dans les états React pendant le passage
- * Informations -> Maintenance -> Sécurité -> Moyens -> Vérification.
+ * Informations générales -> Équipement -> Périodicité & maintenance ->
+ * Moyens & pièces -> Documents & recommandations -> Sécurité & risques ->
+ * Actions & images -> Vérification.
  * Supabase n'est écrit qu'au clic final sur "Créer la gamme".
  */
 export default function GammeCreate() {
@@ -237,6 +281,11 @@ export default function GammeCreate() {
   const [currentStep, setCurrentStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialForm);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [equipmentMode, setEquipmentMode] = useState<"existing" | "new">("existing");
+  const [equipmentSearch, setEquipmentSearch] = useState("");
+  const [equipmentResults, setEquipmentResults] = useState<Equipement[]>([]);
+  const [selectedEquipment, setSelectedEquipment] = useState<Equipement | null>(null);
+  const [equipmentSearching, setEquipmentSearching] = useState(false);
   const [epis, setEpis] = useState<SimpleRef[]>([]);
   const [epcs, setEpcs] = useState<SimpleRef[]>([]);
   const [risques, setRisques] = useState<SimpleRef[]>([]);
@@ -357,6 +406,70 @@ export default function GammeCreate() {
       return next;
     });
   }, [maintenanceTypes, periodicites, typesArret, typesRedaction]);
+
+  useEffect(() => {
+    if (equipmentMode !== "existing") return;
+    const query = equipmentSearch.trim();
+    if (query.length < 2) {
+      setEquipmentResults([]);
+      return;
+    }
+    const timer = window.setTimeout(async () => {
+      setEquipmentSearching(true);
+      try {
+        const response = await api.get<Equipement[] | PaginatedResponse<Equipement>>(
+          "/equipements/",
+          { params: { search: query } },
+        );
+        setEquipmentResults(extractResults(response.data).filter((item) => item.actif !== false));
+      } catch {
+        setEquipmentResults([]);
+      } finally {
+        setEquipmentSearching(false);
+      }
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [equipmentMode, equipmentSearch]);
+
+  const chooseEquipment = (item: Equipement) => {
+    setSelectedEquipment(item);
+    setEquipmentSearch(`${item.code ? `${item.code} — ` : ""}${item.nom}`);
+    setForm((current) => ({
+      ...current,
+      equipement_nom: item.nom ?? "",
+      equipement_code: item.code ?? "",
+      equipement_constructeur: item.constructeur ?? "",
+      equipement_type: item.type ?? "",
+      equipement_reference: item.reference ?? "",
+      equipement_batiment: item.batiment ?? "",
+      equipement_etage: item.etage ?? "",
+      equipement_local: item.local ?? "",
+      equipement_domaine: item.domaine ?? "",
+      equipement_quantite: Number(item.quantite ?? 1),
+      equipement_modele: item.modele ?? "",
+      equipement_gamme_job_plan: item.gamme_job_plan ?? "",
+      equipement_date_intervention: item.date_intervention ?? "",
+      equipement_workorder_genere_par: item.workorder_genere_par ?? "",
+      equipement_description: item.description ?? "",
+    }));
+    setEquipmentResults([]);
+    setError("");
+  };
+
+  const resetEquipmentForm = () => {
+    setSelectedEquipment(null);
+    setEquipmentSearch("");
+    setEquipmentResults([]);
+    setForm((current) => ({
+      ...current,
+      equipement_nom: "", equipement_code: "", equipement_constructeur: "",
+      equipement_type: "", equipement_reference: "", equipement_batiment: "",
+      equipement_etage: "", equipement_local: "", equipement_domaine: "",
+      equipement_quantite: 1, equipement_modele: "", equipement_gamme_job_plan: "",
+      equipement_date_intervention: "", equipement_workorder_genere_par: "",
+      equipement_description: "",
+    }));
+  };
 
   const profileName = useMemo(() => {
     if (!currentUser) return "—";
@@ -505,8 +618,19 @@ export default function GammeCreate() {
       return false;
     }
 
+    if (currentStep === 1) {
+      if (equipmentMode === "existing" && !selectedEquipment) {
+        setError("Recherchez puis sélectionnez un équipement existant.");
+        return false;
+      }
+      if (equipmentMode === "new" && (!form.equipement_nom.trim() || !form.equipement_code.trim())) {
+        setError("Le code et le nom du nouvel équipement sont obligatoires.");
+        return false;
+      }
+    }
+
     if (
-      currentStep === 1 &&
+      currentStep === 2 &&
       (!form.type_maintenance || !form.periodicite || form.main_oeuvre < 1 || !form.type_arret)
     ) {
       setError(
@@ -519,7 +643,7 @@ export default function GammeCreate() {
       setError("Une pièce est encore en cours de saisie. Cliquez sur « Ajouter la pièce » avant de continuer.");
       return false;
     }
-    if (currentStep === 4) {
+    if (currentStep === 6) {
       if (etapes.length === 0) { setError("Ajoutez au moins une étape de maintenance."); return false; }
       const invalid = etapes.find((e) => !e.titre.trim() || e.actions.length === 0 || e.actions.some((a) => !a.contenu.trim()));
       if (invalid) { setError(`Étape ${invalid.numero} : le titre et toutes les actions sont obligatoires.`); return false; }
@@ -592,22 +716,33 @@ export default function GammeCreate() {
       if (existingGammes.some((item: any) => String(item?.code ?? "").trim().toUpperCase() === normalizedCode)) {
         throw new Error(`Le code ${normalizedCode} existe déjà. Choisissez un autre code.`);
       }
-      currentSaveStage = "Création de l'équipement";
-      setSaveStage(currentSaveStage);
-
-      // L'équipement est saisi librement dans le wizard.
-      // On le crée dans la table equipements uniquement au clic final.
-      const equipmentResponse = await api.post("/equipements/", {
-        code: form.equipement_code.trim() || null,
-        nom: form.equipement_nom.trim(),
-        constructeur: form.equipement_constructeur.trim() || null,
-        type: form.equipement_type.trim() || null,
-        reference: form.equipement_reference.trim() || null,
-        description: null,
-        actif: true,
-      });
-
-      const equipmentId = String(equipmentResponse.data.id);
+      let equipmentId: string;
+      if (equipmentMode === "existing") {
+        if (!selectedEquipment?.id) throw new Error("Aucun équipement existant sélectionné.");
+        equipmentId = String(selectedEquipment.id);
+      } else {
+        currentSaveStage = "Création de l'équipement";
+        setSaveStage(currentSaveStage);
+        const equipmentResponse = await api.post("/equipements/", {
+          code: form.equipement_code.trim().toUpperCase(),
+          nom: form.equipement_nom.trim(),
+          batiment: form.equipement_batiment.trim() || null,
+          etage: form.equipement_etage.trim() || null,
+          local: form.equipement_local.trim() || null,
+          domaine: form.equipement_domaine.trim() || null,
+          reference: form.equipement_reference.trim() || null,
+          quantite: Math.max(0, Number(form.equipement_quantite) || 0),
+          constructeur: form.equipement_constructeur.trim() || null,
+          modele: form.equipement_modele.trim() || null,
+          gamme_job_plan: form.equipement_gamme_job_plan.trim() || null,
+          date_intervention: form.equipement_date_intervention || null,
+          workorder_genere_par: form.equipement_workorder_genere_par.trim() || null,
+          type: form.equipement_type.trim() || null,
+          description: form.equipement_description.trim() || null,
+          actif: true,
+        });
+        equipmentId = String(equipmentResponse.data.id);
+      }
 
       currentSaveStage = "Création de la gamme";
       setSaveStage(currentSaveStage);
@@ -850,6 +985,8 @@ export default function GammeCreate() {
   const handleRefresh = () => {
     setCurrentStep(0);
     setForm({ ...initialForm });
+    setEquipmentMode("existing");
+    resetEquipmentForm();
     setSelectedEpis([]);
     setSelectedEpcs([]);
     setSelectedRisques([]);
@@ -1119,59 +1256,6 @@ export default function GammeCreate() {
                 </select>
               </label>
 
-              <div className="form-span-2 profile-section-title">Équipement</div>
-
-              <label>
-                <span>Nom de l'équipement *</span>
-                <input
-                  value={form.equipement_nom}
-                  onChange={(event) => updateForm("equipement_nom", event.target.value)}
-                  placeholder="Ex. Convoyeur principal"
-                />
-              </label>
-
-              <label>
-                <span>Code équipement</span>
-                <input
-                  value={form.equipement_code}
-                  onChange={(event) =>
-                    updateForm("equipement_code", event.target.value.toUpperCase())
-                  }
-                  placeholder="Ex. EQ-001"
-                />
-              </label>
-
-              <label>
-                <span>Constructeur</span>
-                <input
-                  value={form.equipement_constructeur}
-                  onChange={(event) =>
-                    updateForm("equipement_constructeur", event.target.value)
-                  }
-                  placeholder="Ex. Interroll"
-                />
-              </label>
-
-              <label>
-                <span>Type machine</span>
-                <input
-                  value={form.equipement_type}
-                  onChange={(event) => updateForm("equipement_type", event.target.value)}
-                  placeholder="Ex. Convoyeur"
-                />
-              </label>
-
-              <label className="form-span-2">
-                <span>Référence machine</span>
-                <input
-                  value={form.equipement_reference}
-                  onChange={(event) =>
-                    updateForm("equipement_reference", event.target.value)
-                  }
-                  placeholder="Ex. CV-001"
-                />
-              </label>
-
               <div className="form-span-2 profile-section-title">Rédacteur</div>
 
               <label>
@@ -1212,7 +1296,77 @@ export default function GammeCreate() {
         {currentStep === 1 && (
           <>
             <div className="section-heading">
-              <h2>Paramètres de maintenance</h2>
+              <h2>Équipement</h2>
+              <p>Choisissez un équipement déjà enregistré ou créez-en un nouveau.</p>
+            </div>
+
+            <div className="equipment-mode-switch">
+              <button type="button" className={equipmentMode === "existing" ? "primary-button" : "secondary-button"}
+                onClick={() => { setEquipmentMode("existing"); resetEquipmentForm(); }}>
+                Rechercher un équipement existant
+              </button>
+              <button type="button" className={equipmentMode === "new" ? "primary-button" : "secondary-button"}
+                onClick={() => { setEquipmentMode("new"); resetEquipmentForm(); }}>
+                <Plus size={16}/> Créer un nouvel équipement
+              </button>
+            </div>
+
+            {equipmentMode === "existing" ? (
+              <div className="equipment-search-block">
+                <label className="form-span-2">
+                  <span>Recherche équipement *</span>
+                  <input value={equipmentSearch}
+                    onChange={(e) => { setEquipmentSearch(e.target.value); setSelectedEquipment(null); }}
+                    placeholder="Rechercher par code, nom, constructeur, référence..." />
+                </label>
+                {equipmentSearching && <p className="helper-text"><LoaderCircle className="spin" size={15}/> Recherche...</p>}
+                {equipmentResults.length > 0 && (
+                  <div className="equipment-search-results">
+                    {equipmentResults.map((item) => (
+                      <button type="button" key={item.id} className="equipment-result" onClick={() => chooseEquipment(item)}>
+                        <strong>{item.code || "Sans code"} — {item.nom}</strong>
+                        <span>{[item.constructeur, item.modele, item.reference, item.local].filter(Boolean).join(" · ") || "Aucun détail"}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+                {selectedEquipment && (
+                  <div className="review-grid">
+                    <ReviewItem label="Code" value={selectedEquipment.code || "—"}/>
+                    <ReviewItem label="Nom" value={selectedEquipment.nom || "—"}/>
+                    <ReviewItem label="Constructeur" value={selectedEquipment.constructeur || "—"}/>
+                    <ReviewItem label="Modèle" value={selectedEquipment.modele || "—"}/>
+                    <ReviewItem label="Référence" value={selectedEquipment.reference || "—"}/>
+                    <ReviewItem label="Localisation" value={[selectedEquipment.batiment, selectedEquipment.etage, selectedEquipment.local].filter(Boolean).join(" / ") || "—"}/>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="form-grid">
+                <label><span>Code équipement *</span><input value={form.equipement_code} onChange={(e)=>updateForm("equipement_code",e.target.value.toUpperCase())}/></label>
+                <label><span>Nom équipement *</span><input value={form.equipement_nom} onChange={(e)=>updateForm("equipement_nom",e.target.value)}/></label>
+                <label><span>Bâtiment</span><input value={form.equipement_batiment} onChange={(e)=>updateForm("equipement_batiment",e.target.value)}/></label>
+                <label><span>Étage</span><input value={form.equipement_etage} onChange={(e)=>updateForm("equipement_etage",e.target.value)}/></label>
+                <label><span>Local</span><input value={form.equipement_local} onChange={(e)=>updateForm("equipement_local",e.target.value)}/></label>
+                <label><span>Domaine</span><input value={form.equipement_domaine} onChange={(e)=>updateForm("equipement_domaine",e.target.value)}/></label>
+                <label><span>Constructeur / marque</span><input value={form.equipement_constructeur} onChange={(e)=>updateForm("equipement_constructeur",e.target.value)}/></label>
+                <label><span>Modèle</span><input value={form.equipement_modele} onChange={(e)=>updateForm("equipement_modele",e.target.value)}/></label>
+                <label><span>Référence</span><input value={form.equipement_reference} onChange={(e)=>updateForm("equipement_reference",e.target.value)}/></label>
+                <label><span>Type</span><input value={form.equipement_type} onChange={(e)=>updateForm("equipement_type",e.target.value)}/></label>
+                <label><span>Quantité</span><input type="number" min={0} value={form.equipement_quantite} onChange={(e)=>updateForm("equipement_quantite",Math.max(0,Number(e.target.value)||0))}/></label>
+                <label><span>Gamme / Job plan</span><input value={form.equipement_gamme_job_plan} onChange={(e)=>updateForm("equipement_gamme_job_plan",e.target.value)}/></label>
+                <label><span>Date d'intervention</span><input type="date" value={form.equipement_date_intervention} onChange={(e)=>updateForm("equipement_date_intervention",e.target.value)}/></label>
+                <label><span>Workorder généré par</span><input value={form.equipement_workorder_genere_par} onChange={(e)=>updateForm("equipement_workorder_genere_par",e.target.value)}/></label>
+                <label className="form-span-2"><span>Description</span><textarea rows={3} value={form.equipement_description} onChange={(e)=>updateForm("equipement_description",e.target.value)}/></label>
+              </div>
+            )}
+          </>
+        )}
+
+        {currentStep === 2 && (
+          <>
+            <div className="section-heading">
+              <h2>Périodicité & paramètres de maintenance</h2>
               <p>Renseignez les paramètres principaux de l'intervention.</p>
             </div>
 
@@ -1283,10 +1437,34 @@ export default function GammeCreate() {
           </>
         )}
 
-        {currentStep === 2 && (
+        {currentStep === 4 && (
           <>
             <div className="section-heading">
-              <h2>Sécurité</h2>
+              <h2>Documents liés & recommandations particulières</h2>
+              <p>
+                Cette étape est réservée aux documents associés à la gamme et aux recommandations
+                particulières. Les champs seront conservés séparément des moyens et de la sécurité.
+              </p>
+            </div>
+
+            <div className="form-grid">
+              <div className="form-span-2 profile-section-title">Documents liés</div>
+              <div className="form-span-2 empty-state">
+                Aucun document ajouté pour le moment.
+              </div>
+
+              <div className="form-span-2 profile-section-title">Recommandations particulières / Informations</div>
+              <div className="form-span-2 empty-state">
+                Aucune recommandation ajoutée pour le moment.
+              </div>
+            </div>
+          </>
+        )}
+
+        {currentStep === 5 && (
+          <>
+            <div className="section-heading">
+              <h2>Sécurité & risques</h2>
               <p>Sélectionnez les EPI, EPC et risques applicables.</p>
             </div>
 
@@ -1316,7 +1494,7 @@ export default function GammeCreate() {
         {currentStep === 3 && (
           <>
             <div className="section-heading">
-              <h2>Moyens</h2>
+              <h2>Moyens d’exécution & pièces de rechange</h2>
               <p>Sélectionnez les outillages et saisissez directement les pièces de rechange.</p>
             </div>
 
@@ -1444,9 +1622,9 @@ export default function GammeCreate() {
           </>
         )}
 
-        {currentStep === 4 && (
+        {currentStep === 7 && (
           <>
-            <div className="section-heading"><h2>Étapes de maintenance</h2><p>Définissez le titre, la durée, l’image et les actions obligatoires.</p></div>
+            <div className="section-heading"><h2>Liste des actions & images</h2><p>Définissez le titre, la durée, l’image et les actions obligatoires.</p></div>
             <div className="steps-toolbar"><div><strong>{etapes.length} étape(s)</strong><span>Durée totale : {totalDurationMinutes} min</span></div><button type="button" className="primary-button" onClick={addEtape}><Plus size={16}/> Ajouter une étape</button></div>
             <div className="maintenance-steps-list">{etapes.map((etape) => <article key={etape.localId} className="maintenance-step-card">
               <div className="maintenance-step-header"><div className="step-number-badge">{etape.numero}</div><div className="maintenance-step-heading"><strong>Étape {etape.numero}</strong><span>{etape.duree_minutes} min</span></div><button type="button" className="danger-icon-button" disabled={etapes.length===1} onClick={() => removeEtape(etape.localId)}><Trash2 size={16}/></button></div>
@@ -1457,7 +1635,7 @@ export default function GammeCreate() {
           </>
         )}
 
-        {currentStep === 5 && (
+        {currentStep === 7 && (
           <>
             <div className="section-heading">
               <h2>Vérification</h2>
@@ -1469,6 +1647,7 @@ export default function GammeCreate() {
               <ReviewItem label="Intitulé" value={form.designation || "—"} />
               <ReviewItem label="Nom du profil" value={profileName} />
               <ReviewItem label="Titre du poste" value={form.titre_poste.trim() || "—"} />
+              <ReviewItem label="Mode équipement" value={equipmentMode === "existing" ? "Équipement existant" : "Nouvel équipement"} />
               <ReviewItem label="Code équipement" value={form.equipement_code.trim() || "—"} />
               <ReviewItem label="Équipement" value={form.equipement_nom.trim() || "—"} />
               <ReviewItem label="Constructeur" value={form.equipement_constructeur.trim() || "—"} />

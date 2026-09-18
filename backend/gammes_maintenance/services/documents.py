@@ -8,8 +8,10 @@ from io import BytesIO
 import qrcode
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
 
 from docx import Document
@@ -24,11 +26,24 @@ from gammes_maintenance.models import FichierGenere
 # ============================================================
 # WEASYPRINT
 # ============================================================
+#
+# WeasyPrint est utilisé pour convertir le template HTML de la gamme
+# en document PDF.
+#
+# Sur cette installation, la commande :
+#
+#     python -m weasyprint --info
+#
+# confirme que WeasyPrint et Pango sont disponibles.
+#
+# On importe donc directement HTML. C'est volontaire :
+# si WeasyPrint ou une dépendance système manque réellement,
+# Django affichera l'exception d'origine au démarrage au lieu de la
+# masquer derrière un message générique indiquant seulement que
+# WeasyPrint n'est pas disponible.
+# ============================================================
 
-try:
-    from weasyprint import HTML
-except (ImportError, OSError):
-    HTML = None
+from weasyprint import HTML
 
 
 # ============================================================
@@ -423,14 +438,47 @@ def prepare_pdf_images(version):
             except Exception:
                 pass
 
-        equipement = getattr(gamme, "equipement", None)
+        # ========================================================
+        # ÉQUIPEMENT ASSOCIÉ À LA GAMME
+        # ========================================================
+        #
+        # IMPORTANT :
+        # `gamme.equipement` est une relation ForeignKey Django.
+        # Si `equipement_id` contient l'UUID d'un équipement supprimé,
+        # Django lève ObjectDoesNotExist au lieu de retourner None.
+        #
+        # `getattr(gamme, "equipement", None)` ne suffit donc pas à
+        # protéger l'export PDF.
+        #
+        # On intercepte explicitement cette situation. En plus, on place
+        # None dans le cache de relation Django afin que le template
+        # `version_pdf.html` puisse lui aussi accéder à
+        # `gamme.equipement` sans déclencher une nouvelle requête SQL
+        # et sans provoquer une erreur HTTP 500.
+        # ========================================================
 
+        equipement = None
+
+        try:
+            equipement = gamme.equipement
+        except ObjectDoesNotExist:
+            equipement = None
+
+            # Ne modifie PAS la base de données.
+            # Cela sécurise uniquement l'objet Django utilisé pendant
+            # la génération du document courant.
+            gamme._state.fields_cache["equipement"] = None
+
+        # Si l'équipement existe, on prépare éventuellement son image
+        # pour que WeasyPrint puisse l'intégrer au PDF.
         if equipement is not None and hasattr(equipement, "image_url"):
             try:
                 equipement.image_url = image_data_url(
                     getattr(equipement, "image_url", None)
                 )
             except Exception:
+                # Une image inaccessible ne doit jamais empêcher
+                # la génération du document complet.
                 pass
 
     # EPI
@@ -512,12 +560,9 @@ def generate_pdf(version):
     de la première page.
     """
 
-    if HTML is None:
-        raise RuntimeError(
-            "WeasyPrint n'est pas disponible sur cette machine. "
-            "Sous Windows, les dépendances système GTK/Pango "
-            "doivent être installées avant la génération PDF."
-        )
+    # WeasyPrint a déjà été importé en haut de ce module.
+    # En cas de problème réel avec WeasyPrint, l'exception d'import
+    # d'origine est maintenant conservée et visible dans les logs Django.
 
     # Prépare les images Supabase avant le rendu HTML/PDF.
     prepare_pdf_images(version)
@@ -535,17 +580,36 @@ def generate_pdf(version):
     except Exception:
         qr_data_url = None
 
-    html = render_to_string(
-        "gammes/version_pdf.html",
-        {
-            "version": version,
-            "statut_label": get_statut_label(version),
-            "type_maintenance_label":
-                get_type_maintenance_label(version),
-            "qr_data_url": qr_data_url,
-            "qr_url": qr_url,
-        },
-    )
+    context = {
+        "version": version,
+        "statut_label": get_statut_label(version),
+        "type_maintenance_label": get_type_maintenance_label(version),
+        "qr_data_url": qr_data_url,
+        "qr_url": qr_url,
+    }
+
+    # Chargement normal via Django. Si le dossier global templates n'est
+    # pas encore déclaré dans settings.py, on utilise directement le
+    # fichier backend/templates/gammes/version_pdf.html.
+    try:
+        html = render_to_string("gammes/version_pdf.html", context)
+    except TemplateDoesNotExist:
+        from django.template import Context, Engine
+
+        template_path = (
+            Path(settings.BASE_DIR)
+            / "templates"
+            / "gammes"
+            / "version_pdf.html"
+        )
+
+        if not template_path.is_file():
+            raise FileNotFoundError(
+                f"Template PDF introuvable : {template_path}"
+            )
+
+        source = template_path.read_text(encoding="utf-8")
+        html = Engine.get_default().from_string(source).render(Context(context))
 
     pdf_data = HTML(
         string=html,
@@ -557,12 +621,16 @@ def generate_pdf(version):
         f"{version.code_version}.pdf"
     )
 
-    return save_generated_file(
+    # Archive également le document dans fichiers_generes, mais
+    # l'endpoint HTTP a besoin des octets + du nom pour le téléchargement.
+    save_generated_file(
         version=version,
         file_type="pdf",
         filename=filename,
         data=pdf_data,
     )
+
+    return pdf_data, filename
 
 
 # ============================================================
@@ -1123,9 +1191,13 @@ def generate_docx(version):
         f"{version.code_version}.docx"
     )
 
-    return save_generated_file(
+    word_data = buffer.getvalue()
+
+    save_generated_file(
         version=version,
         file_type="word",
         filename=filename,
-        data=buffer.getvalue(),
+        data=word_data,
     )
+
+    return word_data, filename

@@ -1,80 +1,363 @@
+"""
+====================================================================
+MODELES DJANGO - APPLICATION GAMMES MAINTENANCE
+====================================================================
+
+Ce fichier contient les modèles Django représentant les tables
+PostgreSQL / Supabase utilisées par l'application.
+
+IMPORTANT :
+-----------
+La majorité des modèles utilisent :
+
+    managed = False
+
+Cela signifie que Django utilise les tables existantes dans Supabase,
+mais qu'il ne doit pas créer, modifier ou supprimer ces tables.
+
+Les modifications de structure de la base doivent donc être réalisées
+directement dans PostgreSQL / Supabase.
+
+====================================================================
+"""
+
 import uuid
 
 from django.db import models
+from django.utils import timezone
 
 
-# ============================================================
+# ====================================================================
 # EQUIPEMENTS
-# ============================================================
+# ====================================================================
 
 class Equipement(models.Model):
+    """
+    Représente un équipement physique présent sur le site.
+
+    Cette table contient notamment :
+
+    - l'identification de l'équipement ;
+    - sa localisation ;
+    - son domaine technique ;
+    - son constructeur et son modèle ;
+    - sa référence ;
+    - les informations de maintenance associées ;
+    - son statut actif/inactif.
+
+    Table PostgreSQL correspondante :
+        public.equipements
+    """
+
+    # ----------------------------------------------------------------
+    # IDENTIFIANT TECHNIQUE
+    # ----------------------------------------------------------------
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
         editable=False,
     )
 
+    # UUID unique utilisé comme clé primaire.
+    #
+    # Exemple :
+    # 550e8400-e29b-41d4-a716-446655440000
+    #
+    # Cet identifiant est utilisé notamment pour les relations
+    # avec d'autres tables comme gammes_operatoires.
+
+
+    # ----------------------------------------------------------------
+    # IDENTIFICATION DE L'EQUIPEMENT
+    # ----------------------------------------------------------------
+
     code = models.CharField(
-        max_length=100,
+        max_length=50,
         unique=True,
     )
 
-    nom = models.CharField(
-        max_length=255,
-    )
+    # Code unique de l'équipement.
+    #
+    # Exemples :
+    # EQP-000001
+    # EQP-000002
+    # EQP-035561
+    #
+    # unique=True empêche deux équipements d'avoir le même code.
 
-    constructeur = models.CharField(
-        max_length=255,
+
+    nom = models.TextField()
+
+    # Nom ou désignation de l'équipement.
+    #
+    # Correspond à la colonne Excel :
+    # "Equipements"
+    #
+    # Exemple :
+    # COFFRET PC
+    # COLONNE DE CURAGE
+    # POMPE DE RELEVAGE
+    #
+    # TextField est utilisé pour éviter la limite VARCHAR(255).
+
+
+    # =================================================================
+    # LOCALISATION
+    # =================================================================
+
+    batiment = models.TextField(
         null=True,
         blank=True,
     )
 
-    type = models.CharField(
-        max_length=255,
+    # Bâtiment dans lequel se trouve l'équipement.
+    #
+    # Correspond à :
+    # "Batiments/Building"
+
+
+    etage = models.TextField(
         null=True,
         blank=True,
     )
 
-    reference = models.CharField(
-        max_length=255,
+    # Niveau / étage de l'équipement.
+    #
+    # Correspond à :
+    # "Etage/Floor"
+    #
+    # Exemple :
+    # ETAGE 0
+    # ETAGE 1
+    # SOUS-SOL
+
+
+    local = models.TextField(
         null=True,
         blank=True,
     )
+
+    # Localisation détaillée.
+    #
+    # Correspond à :
+    # "Local"
+    #
+    # Exemple :
+    # ZONE EXTERIEUR | ETAGE 0 | POINT S
+
+
+    # =================================================================
+    # CLASSIFICATION TECHNIQUE
+    # =================================================================
+
+    domaine = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    # Domaine technique de l'équipement.
+    #
+    # Correspond à :
+    # "DOMAINE"
+    #
+    # Exemples :
+    # ELECTRICITE
+    # PLOMBERIE
+    # CVC
+    # MENUISERIE / SERRURERIE
+
+
+    # =================================================================
+    # CARACTERISTIQUES DE L'EQUIPEMENT
+    # =================================================================
+
+    reference = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    # Référence fabricant ou référence technique.
+    #
+    # Correspond à :
+    # "REFERENCE"
+
+
+    quantite = models.IntegerField(
+        default=1,
+    )
+
+    # Nombre d'équipements représentés par cette ligne.
+    #
+    # Correspond à :
+    # "QUANTITE"
+    #
+    # Par défaut :
+    # 1
+
+
+    constructeur = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    # Fabricant / marque.
+    #
+    # Correspond à :
+    # "FABRICANT / MARQUE/BRAND"
+    #
+    # Exemples :
+    # Schneider
+    # Siemens
+    # ABB
+    # SICK
+
+
+    modele = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    # Modèle de l'équipement.
+    #
+    # Correspond à :
+    # "MODEL"
+
+
+    # =================================================================
+    # INFORMATIONS DE MAINTENANCE
+    # =================================================================
+
+    gamme_job_plan = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    # Gamme ou Job Plan associé à l'équipement.
+    #
+    # Correspond à :
+    # "GAMME / Job plans"
+    #
+    # Exemple :
+    # PREVENTIVE | 1A | MENUISERIE / SERRURERIE
+
+
+    date_intervention = models.DateField(
+        null=True,
+        blank=True,
+    )
+
+    # Date d'intervention associée à l'équipement.
+    #
+    # Correspond à :
+    # "intervention Date"
+    #
+    # PostgreSQL stocke la date au format :
+    # YYYY-MM-DD
+    #
+    # Exemple :
+    # 2025-12-31
+
+
+    workorder_genere_par = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    # Indique la source ou l'élément ayant généré
+    # le Work Order.
+    #
+    # Correspond à :
+    # "Workorder généré par"
+
+
+    # =================================================================
+    # INFORMATIONS COMPLEMENTAIRES
+    # =================================================================
+
+    type = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    # Type d'équipement.
+    #
+    # Ce champ existait déjà dans l'ancienne structure.
+    # Il est conservé pour assurer la compatibilité avec
+    # le reste de l'application.
+
 
     description = models.TextField(
         null=True,
         blank=True,
     )
 
+    # Description libre de l'équipement.
+
+
+    # =================================================================
+    # STATUT
+    # =================================================================
+
     actif = models.BooleanField(
-        null=True,
-        blank=True,
         default=True,
     )
 
+    # Indique si l'équipement est actif.
+    #
+    # True  = équipement actif
+    # False = équipement désactivé
+
+
+    # =================================================================
+    # TRAÇABILITE
+    # =================================================================
+
+    # Date de création de l’équipement.
+    # Django renseigne automatiquement cette valeur lors du INSERT.
+    # Cela évite d’envoyer NULL à Supabase lorsque created_at est NOT NULL.
     created_at = models.DateTimeField(
-        null=True,
-        blank=True,
+        default=timezone.now,
+        editable=False,
     )
 
+    # Date de dernière modification.
+    # auto_now=True renseigne la date à la création et la met à jour à chaque save().
     updated_at = models.DateTimeField(
-        null=True,
-        blank=True,
+        auto_now=True,
     )
 
     class Meta:
+        # Django ne gère pas physiquement cette table.
+        # La structure est gérée directement dans Supabase.
         managed = False
+
+        # Nom exact de la table PostgreSQL.
         db_table = "equipements"
 
+
     def __str__(self):
+        """
+        Représentation lisible de l'équipement.
+
+        Exemple :
+            EQP-000001 - COFFRET PC
+        """
         return f"{self.code} - {self.nom}"
 
 
-# ============================================================
+# ====================================================================
 # GAMMES OPERATOIRES
-# ============================================================
+# ====================================================================
 
 class GammeOperatoire(models.Model):
+    """
+    Représente une gamme opératoire de maintenance.
+
+    Une gamme peut être associée à un équipement grâce
+    au champ equipement.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -86,15 +369,24 @@ class GammeOperatoire(models.Model):
         unique=True,
     )
 
+    # Code unique de la gamme opératoire.
+
+
     designation = models.CharField(
         max_length=500,
     )
+
+    # Nom / désignation de la gamme.
+
 
     abreviation = models.CharField(
         max_length=100,
         null=True,
         blank=True,
     )
+
+    # Abréviation éventuellement utilisée pour la gamme.
+
 
     equipement = models.ForeignKey(
         Equipement,
@@ -104,6 +396,19 @@ class GammeOperatoire(models.Model):
         null=True,
         blank=True,
     )
+
+    # Relation entre une gamme et un équipement.
+    #
+    # Dans PostgreSQL, la colonne utilisée est :
+    #
+    # equipement_id
+    #
+    # Elle contient l'UUID de l'équipement.
+    #
+    # related_name="gammes" permet par exemple :
+    #
+    # equipement.gammes.all()
+
 
     description = models.TextField(
         null=True,
@@ -134,11 +439,17 @@ class GammeOperatoire(models.Model):
         return f"{self.code} - {self.designation}"
 
 
-# ============================================================
+# ====================================================================
 # VERSIONS DES GAMMES
-# ============================================================
+# ====================================================================
 
 class GammeVersion(models.Model):
+    """
+    Représente une version d'une gamme opératoire.
+
+    Une même gamme peut avoir plusieurs versions.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -242,6 +553,8 @@ class GammeVersion(models.Model):
         managed = False
         db_table = "gamme_versions"
 
+        # Une gamme ne peut avoir qu'une seule fois
+        # le même numéro de version.
         unique_together = (
             ("gamme", "numero_version"),
         )
@@ -250,11 +563,15 @@ class GammeVersion(models.Model):
         return f"{self.gamme.code} - {self.code_version}"
 
 
-# ============================================================
-# EPI
-# ============================================================
+# ====================================================================
+# EPI - EQUIPEMENTS DE PROTECTION INDIVIDUELLE
+# ====================================================================
 
 class EPI(models.Model):
+    """
+    Référentiel des équipements de protection individuelle.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -289,11 +606,15 @@ class EPI(models.Model):
         return self.nom
 
 
-# ============================================================
-# VERSION - EPI
-# ============================================================
+# ====================================================================
+# ASSOCIATION VERSION DE GAMME <-> EPI
+# ====================================================================
 
 class VersionEPI(models.Model):
+    """
+    Table d'association entre une version de gamme et un EPI.
+    """
+
     pk = models.CompositePrimaryKey(
         "version_id",
         "epi_id",
@@ -321,11 +642,16 @@ class VersionEPI(models.Model):
         return f"{self.version.code_version} - {self.epi.nom}"
 
 
-# ============================================================
+# ====================================================================
 # RISQUES
-# ============================================================
+# ====================================================================
 
 class Risque(models.Model):
+    """
+    Référentiel des risques pouvant être associés
+    aux opérations de maintenance.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -361,6 +687,10 @@ class Risque(models.Model):
 
 
 class VersionRisque(models.Model):
+    """
+    Association entre une version de gamme et un risque.
+    """
+
     pk = models.CompositePrimaryKey(
         "version_id",
         "risque_id",
@@ -388,11 +718,15 @@ class VersionRisque(models.Model):
         return f"{self.version.code_version} - {self.risque.nom}"
 
 
-# ============================================================
+# ====================================================================
 # OUTILLAGES
-# ============================================================
+# ====================================================================
 
 class Outillage(models.Model):
+    """
+    Référentiel des outils utilisés pendant les interventions.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -428,6 +762,12 @@ class Outillage(models.Model):
 
 
 class VersionOutillage(models.Model):
+    """
+    Association entre une version de gamme et un outillage.
+
+    La quantité nécessaire peut également être renseignée.
+    """
+
     pk = models.CompositePrimaryKey(
         "version_id",
         "outillage_id",
@@ -460,11 +800,15 @@ class VersionOutillage(models.Model):
         return f"{self.version.code_version} - {self.outillage.nom}"
 
 
-# ============================================================
+# ====================================================================
 # PIECES DE RECHANGE
-# ============================================================
+# ====================================================================
 
 class PieceRechange(models.Model):
+    """
+    Référentiel des pièces de rechange.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -521,6 +865,10 @@ class PieceRechange(models.Model):
 
 
 class VersionPieceRechange(models.Model):
+    """
+    Association entre une version de gamme et une pièce de rechange.
+    """
+
     pk = models.CompositePrimaryKey(
         "version_id",
         "piece_id",
@@ -553,11 +901,15 @@ class VersionPieceRechange(models.Model):
         return f"{self.version.code_version} - {self.piece.nom}"
 
 
-# ============================================================
-# ETAPES
-# ============================================================
+# ====================================================================
+# ETAPES DES GAMMES
+# ====================================================================
 
 class Etape(models.Model):
+    """
+    Représente une étape d'une version de gamme.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -603,6 +955,8 @@ class Etape(models.Model):
         managed = False
         db_table = "etapes"
 
+        # Le numéro d'étape doit être unique
+        # à l'intérieur d'une même version.
         unique_together = (
             ("version", "numero"),
         )
@@ -611,11 +965,15 @@ class Etape(models.Model):
         return f"{self.numero} - {self.titre}"
 
 
-# ============================================================
-# ACTIONS ETAPES
-# ============================================================
+# ====================================================================
+# ACTIONS DES ETAPES
+# ====================================================================
 
 class ActionEtape(models.Model):
+    """
+    Action élémentaire appartenant à une étape.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -650,11 +1008,15 @@ class ActionEtape(models.Model):
         return f"Action {self.ordre} - {self.etape.titre}"
 
 
-# ============================================================
-# IMAGES ETAPES
-# ============================================================
+# ====================================================================
+# IMAGES DES ETAPES
+# ====================================================================
 
 class EtapeImage(models.Model):
+    """
+    Image ou illustration associée à une étape.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -693,11 +1055,21 @@ class EtapeImage(models.Model):
         return f"Image - {self.etape.titre}"
 
 
-# ============================================================
+# ====================================================================
 # DOCUMENTS LIES
-# ============================================================
+# ====================================================================
 
 class DocumentLie(models.Model):
+    """
+    Document associé à une version de gamme.
+
+    Exemple :
+    - notice fabricant ;
+    - procédure ;
+    - schéma ;
+    - documentation technique.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -744,11 +1116,15 @@ class DocumentLie(models.Model):
         return self.titre
 
 
-# ============================================================
+# ====================================================================
 # RECOMMANDATIONS
-# ============================================================
+# ====================================================================
 
 class Recommandation(models.Model):
+    """
+    Recommandation associée à une version de gamme.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -783,11 +1159,17 @@ class Recommandation(models.Model):
         return self.titre or "Recommandation"
 
 
-# ============================================================
-# QR CODE
-# ============================================================
+# ====================================================================
+# QR CODE DES GAMMES
+# ====================================================================
 
 class QRCodeGamme(models.Model):
+    """
+    QR Code associé à une gamme opératoire.
+
+    Une gamme possède au maximum un QR Code.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -827,11 +1209,20 @@ class QRCodeGamme(models.Model):
         return f"QR - {self.gamme.code}"
 
 
-# ============================================================
+# ====================================================================
 # FICHIERS GENERES
-# ============================================================
+# ====================================================================
 
 class FichierGenere(models.Model):
+    """
+    Fichier généré automatiquement pour une version de gamme.
+
+    Exemple :
+    - PDF ;
+    - document ;
+    - export.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -870,11 +1261,15 @@ class FichierGenere(models.Model):
         return self.nom_fichier or self.type_fichier
 
 
-# ============================================================
+# ====================================================================
 # MEDIAS
-# ============================================================
+# ====================================================================
 
 class Media(models.Model):
+    """
+    Bibliothèque de médias de l'application.
+    """
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
