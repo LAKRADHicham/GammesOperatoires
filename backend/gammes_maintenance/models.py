@@ -294,6 +294,13 @@ class Equipement(models.Model):
 
     # Description libre de l'équipement.
 
+    # Image de l'équipement utilisée par le Wizard et les exports PDF/Word.
+    # La colonne doit exister dans public.equipements (modèle managed=False).
+    image_url = models.TextField(
+        null=True,
+        blank=True,
+    )
+
 
     # =================================================================
     # STATUT
@@ -415,6 +422,23 @@ class GammeOperatoire(models.Model):
         blank=True,
     )
 
+    # Métadonnées déjà utilisées par l'API V2.
+    # Elles sont déclarées ici afin que le template PDF puisse les lire.
+    corps_metier = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    type_redaction = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    image_url = models.TextField(
+        null=True,
+        blank=True,
+    )
+
     actif = models.BooleanField(
         null=True,
         blank=True,
@@ -525,6 +549,14 @@ class GammeVersion(models.Model):
     )
 
     production = models.BooleanField(
+        null=True,
+        blank=True,
+    )
+
+    # Type précis d'arrêt utilisé par l'API V2.
+    # La colonne existe déjà dans PostgreSQL / Supabase.
+    # Ce modèle est managed=False : aucune migration Django n'est nécessaire.
+    type_arret = models.TextField(
         null=True,
         blank=True,
     )

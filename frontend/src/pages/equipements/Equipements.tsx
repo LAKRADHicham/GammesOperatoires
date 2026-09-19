@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 
 import {
@@ -7,6 +7,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Factory,
+  Eye,
   LoaderCircle,
   MapPin,
   Pencil,
@@ -549,6 +550,16 @@ export default function Equipements() {
   const [search, setSearch] =
     useState("");
 
+  // Recherche réellement envoyée au backend après un petit délai.
+  // Cela évite une requête HTTP à chaque caractère saisi.
+  const [debouncedSearch, setDebouncedSearch] =
+    useState("");
+
+  // Pagination serveur : on ne charge jamais les 22 610 équipements en mémoire.
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [totalItems, setTotalItems] = useState(0);
+
 
   /* ==========================================================
      ETATS DE CHARGEMENT
@@ -585,6 +596,10 @@ export default function Equipements() {
   const [editing, setEditing] =
     useState<Equipement | null>(null);
 
+  // Équipement affiché dans la fenêtre de consultation « Voir ».
+  const [viewing, setViewing] =
+    useState<Equipement | null>(null);
+
 
   /* ==========================================================
      WIZARD
@@ -616,40 +631,54 @@ export default function Equipements() {
    * Django récupère ensuite les informations
    * dans PostgreSQL / Supabase.
    */
-  const load = async () => {
+  const load = async (
+    requestedPage = page,
+    requestedSearch = debouncedSearch,
+    requestedPageSize = pageSize,
+  ) => {
     try {
       setLoading(true);
-
       setError("");
 
       const response =
         await api.get<
-          Equipement[] |
-          PaginatedResponse<Equipement>
+          Equipement[] | PaginatedResponse<Equipement>
         >(
           "/equipements/",
+          {
+            params: {
+              page: requestedPage,
+              page_size: requestedPageSize,
+              // Django REST Framework SearchFilter utilise généralement « search ».
+              // Le paramètre est omis lorsque la zone de recherche est vide.
+              ...(requestedSearch.trim()
+                ? { search: requestedSearch.trim() }
+                : {}),
+            },
+          },
         );
 
-      const results =
-        extractResults(response.data)
-          .filter(Boolean)
-          .slice()
-          .sort(
-            (a, b) =>
-              String(
-                a.code ?? a.nom,
-              ).localeCompare(
-                String(
-                  b.code ?? b.nom,
-                ),
-                "fr",
-              ),
-          );
+      const results = extractResults(response.data)
+        .filter(Boolean)
+        .slice()
+        .sort((a, b) =>
+          String(a.code ?? a.nom).localeCompare(
+            String(b.code ?? b.nom),
+            "fr",
+          ),
+        );
 
       setItems(results);
+
+      // Une réponse DRF paginée contient « count ».
+      // Si l'API renvoie directement un tableau, on garde un fallback compatible.
+      if (Array.isArray(response.data)) {
+        setTotalItems(response.data.length);
+      } else {
+        setTotalItems(response.data.count ?? results.length);
+      }
     } catch (err) {
       console.error(err);
-
       setError(
         apiErrorMessage(
           err,
@@ -663,74 +692,39 @@ export default function Equipements() {
 
 
   /* ==========================================================
-     CHARGEMENT INITIAL
+     RECHERCHE + PAGINATION SERVEUR
      ========================================================== */
 
+  // Attend 350 ms après la dernière frappe avant de lancer la recherche.
   useEffect(() => {
-    void load();
-  }, []);
+    const timer = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+      setPage(1);
+    }, 350);
 
+    return () => window.clearTimeout(timer);
+  }, [search]);
 
-  /* ==========================================================
-     RECHERCHE LOCALE
-     ========================================================== */
+  // Recharge uniquement la page demandée depuis Django/PostgreSQL.
+  useEffect(() => {
+    void load(page, debouncedSearch, pageSize);
+    // load est volontairement appelée avec les valeurs courantes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, pageSize, debouncedSearch]);
 
-  /**
-   * Recherche dans plusieurs colonnes.
-   *
-   * Exemple :
-   *
-   * - code ;
-   * - équipement ;
-   * - bâtiment ;
-   * - étage ;
-   * - local ;
-   * - domaine ;
-   * - constructeur ;
-   * - modèle ;
-   * - référence.
-   */
-  const filtered = useMemo(
-    () => {
-      const query =
-        search.trim().toLowerCase();
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalItems / pageSize),
+  );
 
-      if (!query) {
-        return items;
-      }
+  const firstItem =
+    totalItems === 0
+      ? 0
+      : (page - 1) * pageSize + 1;
 
-      return items.filter(
-        (item) =>
-          [
-            item.code,
-            item.nom,
-            item.batiment,
-            item.etage,
-            item.local,
-            item.domaine,
-            item.reference,
-            item.constructeur,
-            item.modele,
-            item.type,
-            item.gamme_job_plan,
-            item.workorder_genere_par,
-          ]
-            .map(
-              (value) =>
-                String(
-                  value ?? "",
-                ).toLowerCase(),
-            )
-            .some(
-              (value) =>
-                value.includes(query),
-            ),
-      );
-    },
-    [
-      items,
-      search,
-    ],
+  const lastItem = Math.min(
+    page * pageSize,
+    totalItems,
   );
 
 
@@ -1111,7 +1105,7 @@ export default function Equipements() {
 
       setOpen(false);
 
-      await load();
+      await load(page, debouncedSearch, pageSize);
     } catch (err) {
       console.error(err);
 
@@ -1210,6 +1204,8 @@ export default function Equipements() {
     });
 
     setSearch("");
+    setDebouncedSearch("");
+    setPage(1);
 
     setError("");
 
@@ -1217,7 +1213,7 @@ export default function Equipements() {
 
     setRefreshing(true);
 
-    await load();
+    await load(1, "", pageSize);
 
     setRefreshing(false);
   };
@@ -1359,7 +1355,7 @@ export default function Equipements() {
           </label>
 
           <span>
-            {filtered.length} équipement(s)
+            {firstItem}–{lastItem} sur {totalItems} équipement(s)
           </span>
         </div>
 
@@ -1397,7 +1393,7 @@ export default function Equipements() {
             </thead>
 
             <tbody>
-              {filtered.length === 0 ? (
+              {items.length === 0 ? (
                 <tr>
                   <td
                     colSpan={11}
@@ -1407,7 +1403,7 @@ export default function Equipements() {
                   </td>
                 </tr>
               ) : (
-                filtered.map(
+                items.map(
                   (item) => (
                     <tr key={item.id}>
 
@@ -1458,6 +1454,17 @@ export default function Equipements() {
 
                           <button
                             type="button"
+                            title="Voir"
+                            onClick={() =>
+                              setViewing(item)
+                            }
+                          >
+                            <Eye size={16} />
+                          </button>
+
+
+                          <button
+                            type="button"
                             title="Modifier"
                             onClick={() =>
                               startEdit(item)
@@ -1487,7 +1494,145 @@ export default function Equipements() {
             </tbody>
           </table>
         </div>
+
+        {/* ===================================================
+            PAGINATION SERVEUR
+            =================================================== */}
+        <div className="equipment-pagination">
+          <div className="equipment-pagination-size">
+            <span>Lignes par page</span>
+            <select
+              value={pageSize}
+              onChange={(event) => {
+                setPageSize(Number(event.target.value));
+                setPage(1);
+              }}
+            >
+              <option value={25}>25</option>
+              <option value={50}>50</option>
+              <option value={100}>100</option>
+            </select>
+          </div>
+
+          <span>
+            {firstItem}–{lastItem} sur {totalItems}
+          </span>
+
+          <div className="equipment-pagination-actions">
+            <button
+              type="button"
+              className="equipment-cancel"
+              disabled={page <= 1 || loading}
+              onClick={() =>
+                setPage((current) => Math.max(1, current - 1))
+              }
+            >
+              <ChevronLeft size={17} />
+              Précédent
+            </button>
+
+            <strong>
+              Page {page} / {totalPages}
+            </strong>
+
+            <button
+              type="button"
+              className="equipment-cancel"
+              disabled={page >= totalPages || loading}
+              onClick={() =>
+                setPage((current) =>
+                  Math.min(totalPages, current + 1)
+                )
+              }
+            >
+              Suivant
+              <ChevronRight size={17} />
+            </button>
+          </div>
+        </div>
       </section>
+
+
+      {/* =====================================================
+          MODALE DE CONSULTATION
+          ===================================================== */}
+      {viewing && (
+        <div
+          className="equipment-modal-backdrop"
+          onMouseDown={() => setViewing(null)}
+        >
+          <div
+            className="equipment-modal"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
+            <div className="equipment-modal-head">
+              <div>
+                <h2>Détail de l'équipement</h2>
+                <p>{viewing.code || "Sans code"}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setViewing(null)}
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="equipment-summary">
+              <div className="equipment-summary-grid">
+                {[
+                  ["Code", viewing.code],
+                  ["Équipement", viewing.nom],
+                  ["Bâtiment", viewing.batiment],
+                  ["Étage", viewing.etage],
+                  ["Local", viewing.local],
+                  ["Domaine", viewing.domaine],
+                  ["Constructeur", viewing.constructeur],
+                  ["Modèle", viewing.modele],
+                  ["Référence", viewing.reference],
+                  ["Quantité", viewing.quantite],
+                  ["Type", viewing.type],
+                  ["Gamme / Job Plan", viewing.gamme_job_plan],
+                  ["Date intervention", viewing.date_intervention],
+                  ["Work Order généré par", viewing.workorder_genere_par],
+                ].map(([label, value]) => (
+                  <div key={String(label)}>
+                    <span>{label}</span>
+                    <strong>{String(value ?? "—")}</strong>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ marginTop: 16 }}>
+                <span>Description</span>
+                <p>{viewing.description || "—"}</p>
+              </div>
+            </div>
+
+            <div className="equipment-modal-actions">
+              <button
+                type="button"
+                className="equipment-cancel"
+                onClick={() => setViewing(null)}
+              >
+                Fermer
+              </button>
+              <button
+                type="button"
+                className="equipment-create"
+                onClick={() => {
+                  const selected = viewing;
+                  setViewing(null);
+                  startEdit(selected);
+                }}
+              >
+                <Pencil size={16} />
+                Modifier
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
 
       {/* =====================================================

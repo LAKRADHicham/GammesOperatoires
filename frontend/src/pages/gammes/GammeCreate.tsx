@@ -41,14 +41,13 @@ type Equipement = {
   local?: string | null;
   domaine?: string | null;
   reference?: string | null;
-  quantite?: number | null;
   constructeur?: string | null;
   modele?: string | null;
-  gamme_job_plan?: string | null;
   date_intervention?: string | null;
   workorder_genere_par?: string | null;
   type?: string | null;
   description?: string | null;
+  image_url?: string | null;
   actif?: boolean;
 };
 
@@ -109,15 +108,15 @@ type FormState = {
   equipement_etage: string;
   equipement_local: string;
   equipement_domaine: string;
-  equipement_quantite: number;
   equipement_modele: string;
-  equipement_gamme_job_plan: string;
   equipement_date_intervention: string;
   equipement_workorder_genere_par: string;
   equipement_description: string;
+  equipement_image_url: string;
   corps_metier: string;
   type_redaction: string;
   image_url: string;
+  redacteur: string;
   titre_poste: string;
   type_maintenance: string;
   periodicite: string;
@@ -139,15 +138,15 @@ const initialForm: FormState = {
   equipement_etage: "",
   equipement_local: "",
   equipement_domaine: "",
-  equipement_quantite: 1,
   equipement_modele: "",
-  equipement_gamme_job_plan: "",
   equipement_date_intervention: "",
   equipement_workorder_genere_par: "",
   equipement_description: "",
+  equipement_image_url: "",
   corps_metier: "",
   type_redaction: "",
   image_url: "",
+  redacteur: "",
   titre_poste: "",
   type_maintenance: "",
   periodicite: "",
@@ -445,12 +444,11 @@ export default function GammeCreate() {
       equipement_etage: item.etage ?? "",
       equipement_local: item.local ?? "",
       equipement_domaine: item.domaine ?? "",
-      equipement_quantite: Number(item.quantite ?? 1),
       equipement_modele: item.modele ?? "",
-      equipement_gamme_job_plan: item.gamme_job_plan ?? "",
       equipement_date_intervention: item.date_intervention ?? "",
       equipement_workorder_genere_par: item.workorder_genere_par ?? "",
       equipement_description: item.description ?? "",
+      equipement_image_url: item.image_url ?? "",
     }));
     setEquipmentResults([]);
     setError("");
@@ -465,9 +463,9 @@ export default function GammeCreate() {
       equipement_nom: "", equipement_code: "", equipement_constructeur: "",
       equipement_type: "", equipement_reference: "", equipement_batiment: "",
       equipement_etage: "", equipement_local: "", equipement_domaine: "",
-      equipement_quantite: 1, equipement_modele: "", equipement_gamme_job_plan: "",
+      equipement_modele: "",
       equipement_date_intervention: "", equipement_workorder_genere_par: "",
-      equipement_description: "",
+      equipement_description: "", equipement_image_url: "",
     }));
   };
 
@@ -613,8 +611,8 @@ export default function GammeCreate() {
   const validateCurrentStep = () => {
     setError("");
 
-    if (currentStep === 0 && (!form.code.trim() || !form.designation.trim() || !form.equipement_nom.trim())) {
-      setError("Le code, l'intitulé et l'équipement sont obligatoires.");
+    if (currentStep === 0 && (!form.code.trim() || !form.designation.trim())) {
+      setError("Le code et l'intitulé sont obligatoires.");
       return false;
     }
 
@@ -720,6 +718,15 @@ export default function GammeCreate() {
       if (equipmentMode === "existing") {
         if (!selectedEquipment?.id) throw new Error("Aucun équipement existant sélectionné.");
         equipmentId = String(selectedEquipment.id);
+
+        // L'image peut être ajoutée/remplacée même pour un équipement déjà enregistré.
+        if (form.equipement_image_url && form.equipement_image_url !== (selectedEquipment.image_url ?? "")) {
+          currentSaveStage = "Mise à jour de l'image de l'équipement";
+          setSaveStage(currentSaveStage);
+          await api.patch(`/equipements/${equipmentId}/`, {
+            image_url: form.equipement_image_url,
+          });
+        }
       } else {
         currentSaveStage = "Création de l'équipement";
         setSaveStage(currentSaveStage);
@@ -731,14 +738,13 @@ export default function GammeCreate() {
           local: form.equipement_local.trim() || null,
           domaine: form.equipement_domaine.trim() || null,
           reference: form.equipement_reference.trim() || null,
-          quantite: Math.max(0, Number(form.equipement_quantite) || 0),
           constructeur: form.equipement_constructeur.trim() || null,
           modele: form.equipement_modele.trim() || null,
-          gamme_job_plan: form.equipement_gamme_job_plan.trim() || null,
           date_intervention: form.equipement_date_intervention || null,
           workorder_genere_par: form.equipement_workorder_genere_par.trim() || null,
           type: form.equipement_type.trim() || null,
           description: form.equipement_description.trim() || null,
+          image_url: form.equipement_image_url || null,
           actif: true,
         });
         equipmentId = String(equipmentResponse.data.id);
@@ -787,7 +793,7 @@ export default function GammeCreate() {
 
       await api.patch(`/v2/versions/${version.id}/metadata/`, {
         type_arret: form.type_arret,
-        redacteur: profileName === "—" ? null : profileName,
+        redacteur: form.redacteur.trim() || null,
       });
 
       // Les métadonnées générales sont enregistrées seulement après V0 et ses
@@ -1258,9 +1264,14 @@ export default function GammeCreate() {
 
               <div className="form-span-2 profile-section-title">Rédacteur</div>
 
+            
               <label>
-                <span>Nom du profil</span>
-                <input value={profileName} readOnly />
+                <span>Nom du rédacteur</span>
+                <input
+                value={form.redacteur}
+                onChange={(event) => updateForm("redacteur", event.target.value)}
+                placeholder="Ex. Jean Dupont"
+                />
               </label>
 
               <label>
@@ -1331,14 +1342,42 @@ export default function GammeCreate() {
                   </div>
                 )}
                 {selectedEquipment && (
-                  <div className="review-grid">
-                    <ReviewItem label="Code" value={selectedEquipment.code || "—"}/>
-                    <ReviewItem label="Nom" value={selectedEquipment.nom || "—"}/>
-                    <ReviewItem label="Constructeur" value={selectedEquipment.constructeur || "—"}/>
-                    <ReviewItem label="Modèle" value={selectedEquipment.modele || "—"}/>
-                    <ReviewItem label="Référence" value={selectedEquipment.reference || "—"}/>
-                    <ReviewItem label="Localisation" value={[selectedEquipment.batiment, selectedEquipment.etage, selectedEquipment.local].filter(Boolean).join(" / ") || "—"}/>
-                  </div>
+                  <>
+                    <div className="review-grid">
+                      <ReviewItem label="Code" value={selectedEquipment.code || "—"}/>
+                      <ReviewItem label="Nom" value={selectedEquipment.nom || "—"}/>
+                      <ReviewItem label="Constructeur" value={selectedEquipment.constructeur || "—"}/>
+                      <ReviewItem label="Modèle" value={selectedEquipment.modele || "—"}/>
+                      <ReviewItem label="Référence" value={selectedEquipment.reference || "—"}/>
+                      <ReviewItem label="Localisation" value={[selectedEquipment.batiment, selectedEquipment.etage, selectedEquipment.local].filter(Boolean).join(" / ") || "—"}/>
+                    </div>
+
+                    <label className="form-span-2">
+                      <span>Image de l'équipement</span>
+                      <input
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                        onChange={async (event) => {
+                          const file = event.target.files?.[0];
+                          if (!file) return;
+                          try {
+                            updateForm("equipement_image_url", await compressImage(file));
+                            setError("");
+                          } catch (err: any) {
+                            setError(err?.message || "Impossible de préparer l'image de l'équipement.");
+                          }
+                        }}
+                      />
+                    </label>
+                    {form.equipement_image_url && (
+                      <div className="image-preview form-span-2">
+                        <img src={supabaseImageUrl(form.equipement_image_url) || form.equipement_image_url} alt="Aperçu équipement" />
+                        <button type="button" onClick={() => updateForm("equipement_image_url", "")}>
+                          <Trash2 size={16} /> Supprimer l'image
+                        </button>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ) : (
@@ -1353,11 +1392,36 @@ export default function GammeCreate() {
                 <label><span>Modèle</span><input value={form.equipement_modele} onChange={(e)=>updateForm("equipement_modele",e.target.value)}/></label>
                 <label><span>Référence</span><input value={form.equipement_reference} onChange={(e)=>updateForm("equipement_reference",e.target.value)}/></label>
                 <label><span>Type</span><input value={form.equipement_type} onChange={(e)=>updateForm("equipement_type",e.target.value)}/></label>
-                <label><span>Quantité</span><input type="number" min={0} value={form.equipement_quantite} onChange={(e)=>updateForm("equipement_quantite",Math.max(0,Number(e.target.value)||0))}/></label>
-                <label><span>Gamme / Job plan</span><input value={form.equipement_gamme_job_plan} onChange={(e)=>updateForm("equipement_gamme_job_plan",e.target.value)}/></label>
                 <label><span>Date d'intervention</span><input type="date" value={form.equipement_date_intervention} onChange={(e)=>updateForm("equipement_date_intervention",e.target.value)}/></label>
                 <label><span>Workorder généré par</span><input value={form.equipement_workorder_genere_par} onChange={(e)=>updateForm("equipement_workorder_genere_par",e.target.value)}/></label>
                 <label className="form-span-2"><span>Description</span><textarea rows={3} value={form.equipement_description} onChange={(e)=>updateForm("equipement_description",e.target.value)}/></label>
+
+                <label className="form-span-2">
+                  <span>Image de l'équipement</span>
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0];
+                      if (!file) return;
+                      try {
+                        updateForm("equipement_image_url", await compressImage(file));
+                        setError("");
+                      } catch (err: any) {
+                        setError(err?.message || "Impossible de préparer l'image de l'équipement.");
+                      }
+                    }}
+                  />
+                </label>
+                {form.equipement_image_url && (
+                  <div className="image-preview form-span-2">
+                    <img src={supabaseImageUrl(form.equipement_image_url) || form.equipement_image_url} alt="Aperçu équipement" />
+                    <button type="button" onClick={() => updateForm("equipement_image_url", "")}>
+                      <Trash2 size={16} /> Supprimer l'image
+                    </button>
+                  </div>
+                )}
+
               </div>
             )}
           </>
@@ -1423,15 +1487,6 @@ export default function GammeCreate() {
                     </option>
                   ))}
                 </select>
-              </label>
-
-              <label className="form-span-2">
-                <span>Modifications</span>
-                <textarea
-                  value={form.modifications}
-                  onChange={(event) => updateForm("modifications", event.target.value)}
-                  rows={3}
-                />
               </label>
             </div>
           </>
@@ -1622,7 +1677,7 @@ export default function GammeCreate() {
           </>
         )}
 
-        {currentStep === 7 && (
+        {currentStep === 6 && (
           <>
             <div className="section-heading"><h2>Liste des actions & images</h2><p>Définissez le titre, la durée, l’image et les actions obligatoires.</p></div>
             <div className="steps-toolbar"><div><strong>{etapes.length} étape(s)</strong><span>Durée totale : {totalDurationMinutes} min</span></div><button type="button" className="primary-button" onClick={addEtape}><Plus size={16}/> Ajouter une étape</button></div>

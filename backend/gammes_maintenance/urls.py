@@ -152,6 +152,9 @@ from rest_framework.routers import DefaultRouter
 # dans urlpatterns.
 #
 # ====================================================================
+from rest_framework.routers import DefaultRouter
+
+from .auth_views import google_login
 
 from .views import (
     # ----------------------------------------------------------------
@@ -598,7 +601,18 @@ router.register(
 urlpatterns = [
 
     # ----------------------------------------------------------------
+    # AUTHENTIFICATION GOOGLE
+    # ----------------------------------------------------------------
+    # POST /api/auth/google/
+    path(
+        "auth/google/",
+        google_login,
+        name="google-login",
+    ),
+
+    # ----------------------------------------------------------------
     # ROUTES DU DEFAULTROUTER
+    # ----------------------------------------------------------------
     # ----------------------------------------------------------------
     #
     # Cette instruction inclut toutes les routes enregistrées

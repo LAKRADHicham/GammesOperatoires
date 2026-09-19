@@ -11,6 +11,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
+from django.db import connection
 from django.template import TemplateDoesNotExist
 from django.template.loader import render_to_string
 
@@ -51,10 +52,9 @@ from weasyprint import HTML
 # ============================================================
 
 STATUT_LABELS = {
-    "brouillon": "Brouillon",
-    "en_validation": "En validation",
+    "en_validation": "En cours de validation",
     "validee": "Validée",
-    "archivee": "Archivée",
+    "archivee": "Archivé",
 }
 
 
@@ -82,6 +82,12 @@ def get_statut_label(version):
 
     if not statut:
         return "-"
+
+    # Un brouillon V0 correspond à une création.
+    # Un brouillon V1/V2/... correspond à une modification d'une gamme existante.
+    if statut == "brouillon":
+        numero = int(getattr(version, "numero_version", 0) or 0)
+        return "En cours de création" if numero == 0 else "En cours de modification"
 
     return STATUT_LABELS.get(
         statut,
@@ -549,6 +555,36 @@ def prepare_pdf_images(version):
         pass
 
 
+def get_pdf_epcs(version):
+    """
+    Charge les EPC de la version via les tables V2.
+    Les EPC ne possèdent pas encore de modèle Django historique dans models.py,
+    donc cette lecture SQL évite de casser les API existantes.
+    Chaque image est convertie en Data URL pour WeasyPrint.
+    """
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT e.id, e.nom, e.description, e.image_url
+                FROM version_epcs ve
+                INNER JOIN epcs e ON e.id = ve.epc_id
+                WHERE ve.version_id = %s
+                ORDER BY e.nom
+                """,
+                [version.id],
+            )
+            columns = [col[0] for col in cursor.description]
+            rows = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+        for row in rows:
+            row["image_url"] = image_data_url(row.get("image_url"))
+        return rows
+    except Exception:
+        # L'absence de la table V2 ne doit jamais bloquer l'export PDF.
+        return []
+
+
 # ============================================================
 # PDF
 # ============================================================
@@ -586,6 +622,7 @@ def generate_pdf(version):
         "type_maintenance_label": get_type_maintenance_label(version),
         "qr_data_url": qr_data_url,
         "qr_url": qr_url,
+        "pdf_epcs": get_pdf_epcs(version),
     }
 
     # Chargement normal via Django. Si le dossier global templates n'est

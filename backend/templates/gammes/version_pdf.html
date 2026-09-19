@@ -1,287 +1,1967 @@
-<!doctype html>
+{% load static %}
+
+<!DOCTYPE html>
 <html lang="fr">
+
 <head>
-<meta charset="utf-8">
-<style>
-@page {
-    size: A4;
-    margin: 14mm 14mm 17mm 14mm;
-    @bottom-right {
-        content: "Page " counter(page) " / " counter(pages);
-        color: #64748b;
-        font-size: 7.5pt;
-    }
-}
-* { box-sizing: border-box; }
-body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 9.2pt;
-    line-height: 1.38;
-    color: #1f2937;
-    background: #fff;
-}
-.document-header {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-    border: 1px solid #d1fae5;
-    border-top: 5px solid #15803d;
-    padding: 10px 11px;
-    margin-bottom: 10px;
-    background: #f8fffa;
-}
-.header-main,.header-qr { display: table-cell; vertical-align: middle; }
-.header-main { width: 78%; padding-right: 12px; }
-.header-qr { width: 22%; text-align: center; }
-.eyebrow {
-    margin-bottom: 4px; color: #15803d; font-size: 7.5pt;
-    font-weight: 700; text-transform: uppercase; letter-spacing: .8px;
-}
-.title { margin: 0 0 4px; color: #14532d; font-size: 18pt; line-height: 1.12; }
-.designation { margin: 0 0 7px; color: #374151; font-size: 10.5pt; font-weight: 600; }
-.version-line {
-    display: inline-block; padding: 3px 8px; border: 1px solid #86efac;
-    border-radius: 10px; background: #dcfce7; color: #166534;
-    font-size: 8pt; font-weight: 700;
-}
-.qr-box { border: 1px solid #86efac; border-radius: 7px; padding: 5px; background: #fff; }
-.qr-box img { display:block; width:27mm; height:27mm; margin:0 auto 3px; }
-.qr-label { color:#166534; font-size:7.5pt; font-weight:700; }
-.qr-code-label { color:#64748b; font-size:6.8pt; margin-top:1px; }
-.section-title {
-    display: table; width: 100%; margin: 12px 0 6px;
-    page-break-after: avoid;
-}
-.section-title .number,.section-title h2 { display: table-cell; vertical-align: middle; }
-.section-title .number {
-    width: 23px; height: 23px; text-align:center; color:#fff;
-    background:#15803d; border-radius:50%; font-size:8pt; font-weight:700;
-}
-.section-title h2 {
-    margin:0; padding-left:7px; color:#14532d; font-size:12pt;
-    border-bottom:1px solid #bbf7d0; padding-bottom:3px;
-}
-.meta { display: table; width:100%; table-layout:fixed; border-collapse:separate; border-spacing:4px; margin:0 -4px 7px; }
-.meta-row { display:table-row; }
-.meta-item {
-    display:table-cell; width:50%; border:1px solid #dcfce7;
-    background:#f0fdf4; padding:6px 7px; vertical-align:top;
-}
-.meta-label { display:block; color:#166534; font-size:7.2pt; font-weight:700; text-transform:uppercase; margin-bottom:2px; }
-.meta-value { font-weight:600; color:#1f2937; }
-.info-strip {
-    border-left:4px solid #16a34a; background:#f8fafc; padding:7px 9px;
-    margin:6px 0; page-break-inside:avoid;
-}
-.kpi-grid { display:table; width:100%; table-layout:fixed; border-spacing:5px; margin:0 -5px; }
-.kpi { display:table-cell; text-align:center; border:1px solid #d1fae5; padding:6px; background:#fff; }
-.kpi strong { display:block; color:#14532d; font-size:11pt; }
-.kpi span { color:#64748b; font-size:7.2pt; }
-table { width:100%; border-collapse:collapse; margin:4px 0 7px; }
-thead { display:table-header-group; }
-tr { page-break-inside:avoid; }
-th,td { border:1px solid #dbe4df; padding:5px 6px; text-align:left; vertical-align:top; }
-th { background:#dcfce7; color:#14532d; font-size:8pt; font-weight:700; }
-.box {
-    border:1px solid #dbe4df; border-left:4px solid #22c55e;
-    background:#fff; padding:7px 8px; margin:6px 0; page-break-inside:avoid;
-}
-.step-box {
-    border:1px solid #cbd5e1; margin:7px 0 9px; page-break-inside:avoid; background:#fff;
-}
-.step-header { display:table; width:100%; background:#f0fdf4; border-bottom:1px solid #d1fae5; padding:6px 8px; }
-.step-number,.step-heading,.step-time { display:table-cell; vertical-align:middle; }
-.step-number {
-    width:22px; height:22px; text-align:center; background:#15803d; color:#fff;
-    border-radius:50%; font-weight:700;
-}
-.step-heading { padding-left:7px; color:#14532d; font-weight:700; font-size:10pt; }
-.step-time { width:70px; text-align:right; color:#64748b; font-size:8pt; }
-.step-content { padding:6px 9px 7px; }
-ol { margin:5px 0 2px; padding-left:20px; }
-li { margin-bottom:3px; }
-.empty { color:#94a3b8; font-style:italic; }
-.badge-yes,.badge-no {
-    display:inline-block; min-width:24px; text-align:center; padding:1px 5px;
-    border-radius:8px; font-size:7pt; font-weight:700;
-}
-.badge-yes { background:#dcfce7; color:#166534; }
-.badge-no { background:#f1f5f9; color:#64748b; }
-.footer {
-    position:fixed; left:0; right:0; bottom:-10mm; border-top:1px solid #e2e8f0;
-    padding-top:3px; color:#64748b; font-size:7pt;
-}
-.footer-left { float:left; }
-.footer-center { text-align:center; }
-.small { color:#64748b; font-size:7.5pt; }
-.main-image { margin:7px 0 9px; text-align:center; page-break-inside:avoid; }
-.main-image img { max-width:100%; max-height:92mm; object-fit:contain; border:1px solid #dbe4df; padding:3px; background:#fff; }
-.safety-grid { display:table; width:100%; table-layout:fixed; border-spacing:5px; margin:0 -5px 7px; }
-.safety-card { display:table-cell; text-align:center; vertical-align:top; border:1px solid #e2e8f0; padding:5px; }
-.safety-card img { width:18mm; height:18mm; object-fit:contain; display:block; margin:0 auto 3px; }
-.safety-card strong { display:block; font-size:7.4pt; color:#334155; }
-.step-images { text-align:center; margin:7px 0 2px; }
-.step-image { display:inline-block; width:47%; margin:1%; vertical-align:top; page-break-inside:avoid; }
-.step-image img { max-width:100%; max-height:85mm; object-fit:contain; border:1px solid #dbe4df; padding:2px; }
-.step-image-caption { color:#64748b; font-size:7pt; margin-top:2px; }
-</style>
+
+    <meta charset="utf-8">
+
+    <title>
+        {{ version.gamme.code|default:"Gamme" }}
+        -
+        {{ version.code_version|default:"V0" }}
+    </title>
+
+    <style>
+
+        @page {
+            size: A4;
+            margin: 13mm 12mm 15mm 12mm;
+
+            @bottom-left {
+                content: "Gamme opératoire • {{ version.gamme.code|default:'—' }}";
+                font-size: 8px;
+                color: #64748b;
+            }
+
+            @bottom-right {
+                content: "Page " counter(page) " / " counter(pages);
+                font-size: 8px;
+                color: #64748b;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 9.2pt;
+            line-height: 1.35;
+            color: #1f2937;
+            margin: 0;
+            background: white;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        p {
+            margin-top: 0;
+        }
+
+        .header {
+            border: 1.5px solid #374151;
+            margin-bottom: 9px;
+        }
+
+        .header-top {
+            display: table;
+            width: 100%;
+            background: #374151;
+            color: white;
+        }
+
+        .header-logo {
+            display: table-cell;
+            width: 22%;
+            vertical-align: middle;
+            text-align: center;
+            padding: 10px;
+            border-right: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .logo-title {
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1.2;
+        }
+
+        .logo-subtitle {
+            font-size: 8px;
+            margin-top: 4px;
+        }
+
+        .header-main {
+            display: table-cell;
+            width: 53%;
+            vertical-align: middle;
+            text-align: center;
+            padding: 10px;
+        }
+
+        .header-main h1 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .header-main p {
+            margin: 4px 0 0;
+            font-size: 9px;
+        }
+
+        .header-qr {
+            display: table-cell;
+            width: 25%;
+            vertical-align: middle;
+            text-align: center;
+            padding: 7px;
+            border-left: 1px solid rgba(255,255,255,0.4);
+        }
+
+        .header-qr img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+            background: white;
+            padding: 4px;
+        }
+
+        .qr-label {
+            display: block;
+            margin-top: 3px;
+            font-size: 7px;
+            text-transform: uppercase;
+        }
+
+        .header-reference {
+            display: table;
+            width: 100%;
+            border-top: 1px solid #374151;
+            background: #f3f4f6;
+        }
+
+        .reference-left {
+            display: table-cell;
+            width: 65%;
+            padding: 8px 10px;
+            vertical-align: middle;
+        }
+
+        .reference-code {
+            font-size: 15px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .reference-title {
+            margin-top: 2px;
+            font-size: 9px;
+            color: #374151;
+        }
+
+        .reference-right {
+            display: table-cell;
+            width: 35%;
+            padding: 6px 10px;
+            vertical-align: middle;
+            text-align: right;
+        }
+
+        .version-line {
+            font-size: 8px;
+            margin-bottom: 2px;
+        }
+
+        .version-line strong {
+            color: #374151;
+        }
+
+        .section {
+            margin-bottom: 9px;
+            page-break-inside: avoid;
+        }
+
+        .section-title {
+            background: #374151;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            padding: 6px 8px;
+            text-transform: uppercase;
+        }
+
+        .section-body {
+            border: 1px solid #d1d5db;
+            border-top: none;
+            padding: 8px;
+        }
+
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .info-table td {
+            border: 1px solid #d1d5db;
+            padding: 5px 7px;
+            vertical-align: top;
+        }
+
+        .label {
+            display: block;
+            color: #64748b;
+            font-size: 7px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .value {
+            font-size: 9px;
+            font-weight: 500;
+        }
+
+        .equipment-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .equipment-photo-cell {
+            width: 30%;
+            padding-right: 8px;
+            vertical-align: middle;
+        }
+
+        .equipment-info-cell {
+            width: 70%;
+            vertical-align: top;
+        }
+
+        .equipment-photo {
+            width: 100%;
+            height: 145px;
+            border: 1px solid #d1d5db;
+            background: #f8fafc;
+            text-align: center;
+        }
+
+        .equipment-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .no-photo {
+            height: 100%;
+            display: table;
+            width: 100%;
+            color: #94a3b8;
+            font-size: 8px;
+        }
+
+        .no-photo span {
+            display: table-cell;
+            vertical-align: middle;
+        }
+
+        .maintenance-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .maintenance-table td {
+            width: 20%;
+            text-align: center;
+            border: 1px solid #d1d5db;
+            padding: 7px 4px;
+        }
+
+        .maintenance-label {
+            display: block;
+            font-size: 7px;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .maintenance-value {
+            display: block;
+            margin-top: 3px;
+            font-size: 9px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 2px 6px;
+            border: 1px solid #374151;
+            color: #374151;
+            font-weight: bold;
+            font-size: 8px;
+            text-transform: uppercase;
+        }
+
+        .risk-grid {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .risk-grid td {
+            width: 50%;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .risk-card {
+            border: 1px solid #d1d5db;
+            min-height: 75px;
+            display: table;
+            width: 100%;
+        }
+
+        .risk-photo {
+            display: table-cell;
+            width: 75px;
+            padding: 4px;
+            vertical-align: middle;
+        }
+
+        .risk-photo img {
+            width: 65px;
+            height: 60px;
+            object-fit: contain;
+            border: 1px solid #e5e7eb;
+        }
+
+        .risk-info {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 5px;
+        }
+
+        .risk-name {
+            font-size: 8.5px;
+            font-weight: bold;
+        }
+
+        .risk-description {
+            margin-top: 3px;
+            font-size: 7.5px;
+            color: #64748b;
+        }
+
+        .tool-grid {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .tool-grid td {
+            width: 33.33%;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .tool-card {
+            border: 1px solid #d1d5db;
+            min-height: 135px;
+        }
+
+        .tool-photo {
+            width: 100%;
+            height: 80px;
+            border-bottom: 1px solid #d1d5db;
+            text-align: center;
+        }
+
+        .tool-photo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .tool-info {
+            padding: 5px;
+        }
+
+        .tool-name {
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        .tool-description {
+            margin-top: 3px;
+            font-size: 7px;
+            color: #64748b;
+        }
+
+        .quantity {
+            margin-top: 3px;
+            font-size: 7.5px;
+            font-weight: bold;
+        }
+
+        .parts-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .parts-table th {
+            background: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 5px;
+            font-size: 7px;
+            text-align: left;
+            text-transform: uppercase;
+        }
+
+        .parts-table td {
+            border: 1px solid #d1d5db;
+            padding: 5px;
+            font-size: 7.5px;
+            vertical-align: middle;
+        }
+
+        .part-image {
+            width: 45px;
+            height: 40px;
+            object-fit: contain;
+        }
+
+        .step {
+            border: 1px solid #cbd5e1;
+            margin-bottom: 9px;
+            page-break-inside: avoid;
+        }
+
+        .step-header {
+            display: table;
+            width: 100%;
+            background: #f3f4f6;
+            border-bottom: 1px solid #cbd5e1;
+        }
+
+        .step-number {
+            display: table-cell;
+            width: 45px;
+            background: #374151;
+            color: white;
+            text-align: center;
+            vertical-align: middle;
+            font-size: 15px;
+            font-weight: bold;
+        }
+
+        .step-title {
+            display: table-cell;
+            vertical-align: middle;
+            padding: 6px 8px;
+            font-size: 10px;
+            font-weight: bold;
+            color: #374151;
+        }
+
+        .step-duration {
+            display: table-cell;
+            width: 75px;
+            vertical-align: middle;
+            text-align: center;
+            font-size: 7px;
+            color: #64748b;
+        }
+
+        .step-content {
+            padding: 8px;
+        }
+
+        .step-description {
+            font-size: 8.5px;
+            white-space: pre-line;
+            margin-bottom: 7px;
+        }
+
+        .actions-title {
+            font-size: 8px;
+            font-weight: bold;
+            text-transform: uppercase;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .actions-list {
+            margin: 0 0 7px 17px;
+            padding: 0;
+        }
+
+        .actions-list li {
+            margin-bottom: 3px;
+            font-size: 8px;
+        }
+
+        .step-gallery {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .step-gallery td {
+            width: 33.33%;
+            padding: 4px;
+            vertical-align: top;
+        }
+
+        .photo-card {
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+        }
+
+        .photo-card img {
+            display: block;
+            width: 100%;
+            height: 125px;
+            object-fit: contain;
+            padding: 3px;
+        }
+
+        .photo-caption {
+            border-top: 1px solid #e5e7eb;
+            padding: 4px;
+            text-align: center;
+            font-size: 7px;
+            color: #64748b;
+        }
+
+        .recommendation {
+            border-left: 3px solid #374151;
+            background: #f8fafc;
+            padding: 7px;
+            margin-bottom: 5px;
+            page-break-inside: avoid;
+        }
+
+        .recommendation-title {
+            font-weight: bold;
+            font-size: 8px;
+            color: #374151;
+            margin-bottom: 3px;
+        }
+
+        .recommendation-content {
+            font-size: 8px;
+            white-space: pre-line;
+        }
+
+        .document {
+            border: 1px solid #d1d5db;
+            padding: 6px;
+            margin-bottom: 5px;
+            page-break-inside: avoid;
+        }
+
+        .document-title {
+            font-size: 8px;
+            font-weight: bold;
+        }
+
+        .document-reference {
+            font-size: 7px;
+            color: #64748b;
+        }
+
+        .document-description {
+            font-size: 7.5px;
+            margin-top: 2px;
+        }
+
+        .document-url {
+            font-size: 6.5px;
+            color: #64748b;
+            word-break: break-all;
+            margin-top: 2px;
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            border: 1px solid #d1d5db;
+            padding: 5px;
+            font-size: 7.5px;
+        }
+
+        .history-table th {
+            background: #f3f4f6;
+            text-transform: uppercase;
+            text-align: left;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .signature-table th,
+        .signature-table td {
+            border: 1px solid #d1d5db;
+            padding: 7px;
+        }
+
+        .signature-table th {
+            background: #f3f4f6;
+            color: #374151;
+            font-size: 8px;
+        }
+
+        .signature-space {
+            height: 55px;
+        }
+
+        .empty {
+            padding: 10px;
+            border: 1px dashed #cbd5e1;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 8px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .avoid-break {
+            page-break-inside: avoid;
+        }
+
+
+        /* Palette finale : blanc, gris clair et anthracite */
+        .header { border-color:#d1d5db; }
+        .header-top { background:#ffffff; color:#111827; border-bottom:1px solid #d1d5db; }
+        .header-logo { border-right-color:#e5e7eb; }
+        .header-qr { border-left-color:#e5e7eb; }
+        .header-reference { border-top-color:#d1d5db; background:#f3f4f6; }
+        .section-title { background:#e5e7eb; color:#111827; border:1px solid #d1d5db; }
+        .status { border-color:#9ca3af; color:#374151; background:#f9fafb; }
+        .step-number { background:#4b5563; }
+
+    </style>
+
 </head>
+
 <body>
-<div class="document-header">
-  <div class="header-main">
-    <div class="eyebrow">Gamme opératoire de maintenance</div>
-    <h1 class="title">{{ version.gamme.code }}</h1>
-    <p class="designation">{{ version.gamme.designation }}</p>
-    <span class="version-line">{{ version.code_version }} · {{ statut_label }}</span>
-  </div>
-  <div class="header-qr">
-    <div class="qr-box">
-      {% if qr_data_url %}
-        <img src="{{ qr_data_url }}" alt="QR Code {{ version.gamme.code }}">
-      {% else %}
-        <div class="empty">QR indisponible</div>
-      {% endif %}
-      <div class="qr-label">Accès à la gamme</div>
-      <div class="qr-code-label">{{ version.gamme.code }}</div>
+
+<!-- ============================================================ -->
+<!-- EN-TÊTE -->
+<!-- ============================================================ -->
+
+<div class="header">
+
+    <div class="header-top">
+
+        <div class="header-logo">
+
+            <div class="logo-title">
+                GAMMES
+                <br>
+                OPÉRATOIRES
+            </div>
+
+            <div class="logo-subtitle">
+                DOCUMENT DE MAINTENANCE
+            </div>
+
+        </div>
+
+
+        <div class="header-main">
+
+            <h1>
+                Gamme Opératoire
+            </h1>
+
+            <p>
+                Fiche d'intervention et de maintenance
+            </p>
+
+        </div>
+
+
+        <div class="header-qr">
+
+            {% if qr_data_url %}
+
+                <img
+                    src="{{ qr_data_url }}"
+                    alt="QR Code"
+                >
+
+                <span class="qr-label">
+                    Scanner pour consulter
+                </span>
+
+            {% endif %}
+
+        </div>
+
     </div>
-  </div>
-</div>
 
-<div class="section-title"><span class="number">1</span><h2>Identification</h2></div>
-<div class="meta">
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Code gamme</span><span class="meta-value">{{ version.gamme.code }}</span></div>
-    <div class="meta-item"><span class="meta-label">Version</span><span class="meta-value">{{ version.code_version }}</span></div>
-  </div>
-  <div class="meta-row">
-    <div class="meta-item"><span class="meta-label">Désignation</span><span class="meta-value">{{ version.gamme.designation }}</span></div>
-    <div class="meta-item"><span class="meta-label">Statut</span><span class="meta-value">{{ statut_label }}</span></div>
-  </div>
-</div>
-{% if version.gamme.image_url %}
-<div class="main-image">
-  <img src="{{ version.gamme.image_url }}" alt="{{ version.gamme.designation }}">
-</div>
-{% endif %}
 
-<div class="section-title"><span class="number">2</span><h2>Paramètres de maintenance</h2></div>
-<div class="kpi-grid">
-  <div class="kpi"><strong>{{ type_maintenance_label|default:"-" }}</strong><span>Type de maintenance</span></div>
-  <div class="kpi"><strong>{{ version.periodicite|default:"-" }}</strong><span>Périodicité</span></div>
-  <div class="kpi"><strong>{{ version.main_oeuvre|default:0 }}</strong><span>Main-d'œuvre</span></div>
-  <div class="kpi"><strong>{{ version.duree_minutes|default:0 }} min</strong><span>Durée totale</span></div>
-</div>
-<table>
-  <thead><tr><th>Référentiel</th><th>Rapport</th><th>Production</th><th>Arrêt</th><th>Mode dégradé</th></tr></thead>
-  <tbody><tr>
-    <td>{% if version.referentiel %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
-    <td>{% if version.rapport %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
-    <td>{% if version.production %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
-    <td>{% if version.arret %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
-    <td>{% if version.degrade %}<span class="badge-yes">Oui</span>{% else %}<span class="badge-no">Non</span>{% endif %}</td>
-  </tr></tbody>
-</table>
+    <div class="header-reference">
 
-<div class="section-title"><span class="number">3</span><h2>Sécurité & prévention</h2></div>
-<table>
-  <thead><tr><th>Risques identifiés</th><th>Équipements de protection individuelle (EPI)</th></tr></thead>
-  <tbody><tr>
-    <td>{% for x in version.version_risques.all %}{{ x.risque.nom }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="empty">Aucun risque renseigné</span>{% endfor %}</td>
-    <td>{% for x in version.version_epis.all %}{{ x.epi.nom }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="empty">Aucun EPI renseigné</span>{% endfor %}</td>
-  </tr></tbody>
-</table>
+        <div class="reference-left">
 
-{% if version.version_epis.all %}
-<div class="safety-grid">
-{% for x in version.version_epis.all %}
-  <div class="safety-card">
-    {% if x.epi.image_url %}<img src="{{ x.epi.image_url }}" alt="{{ x.epi.nom }}">{% endif %}
-    <strong>{{ x.epi.nom }}</strong>
-  </div>
-  {% if forloop.counter|divisibleby:4 and not forloop.last %}</div><div class="safety-grid">{% endif %}
-{% endfor %}
-</div>
-{% endif %}
+            <div class="reference-code">
+                {{ version.gamme.code|default:"-" }}
+            </div>
 
-{% if version.version_risques.all %}
-<div class="safety-grid">
-{% for x in version.version_risques.all %}
-  <div class="safety-card">
-    {% if x.risque.image_url %}<img src="{{ x.risque.image_url }}" alt="{{ x.risque.nom }}">{% endif %}
-    <strong>{{ x.risque.nom }}</strong>
-  </div>
-  {% if forloop.counter|divisibleby:4 and not forloop.last %}</div><div class="safety-grid">{% endif %}
-{% endfor %}
-</div>
-{% endif %}
+            <div class="reference-title">
+                {{ version.gamme.designation|default:"Gamme opératoire" }}
+            </div>
 
-<div class="section-title"><span class="number">4</span><h2>Moyens nécessaires</h2></div>
-<table>
-  <thead><tr><th>Outillages</th><th>Pièces de rechange</th></tr></thead>
-  <tbody><tr>
-    <td>{% for x in version.version_outillages.all %}<strong>{{ x.outillage.nom }}</strong> <span class="small">× {{ x.quantite|default:1 }}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="empty">Aucun outillage renseigné</span>{% endfor %}</td>
-    <td>{% for x in version.version_pieces_rechange.all %}{% if x.piece.code %}<span class="small">{{ x.piece.code }} — </span>{% endif %}<strong>{{ x.piece.nom }}</strong> <span class="small">× {{ x.quantite|default:1 }}</span>{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="empty">Aucune pièce renseignée</span>{% endfor %}</td>
-  </tr></tbody>
-</table>
+        </div>
 
-<div class="section-title"><span class="number">5</span><h2>Mode opératoire — étapes & actions</h2></div>
-{% for step in version.etapes.all %}
-<div class="step-box">
-  <div class="step-header">
-    <span class="step-number">{{ step.numero }}</span>
-    <span class="step-heading">{{ step.titre }}</span>
-    <span class="step-time">{{ step.duree_minutes|default:0 }} min</span>
-  </div>
-  <div class="step-content">
-    {% if step.description %}<div class="info-strip">{{ step.description }}</div>{% endif %}
-    <ol>
-      {% for action in step.actions.all %}
-        <li>{{ action.contenu }}</li>
-      {% empty %}
-        <li class="empty">Aucune action renseignée</li>
-      {% endfor %}
-    </ol>
-    {% if step.images.all %}
-    <div class="step-images">
-      {% for image in step.images.all %}
-      <div class="step-image">
-        <img src="{{ image.image_url }}" alt="Étape {{ step.numero }}">
-        {% if image.description %}<div class="step-image-caption">{{ image.description }}</div>{% endif %}
-      </div>
-      {% endfor %}
+
+        <div class="reference-right">
+
+            <div class="version-line">
+                <strong>Version :</strong>
+                {{ version.code_version|default:"V0" }}
+            </div>
+
+            <div class="version-line">
+                <strong>Date :</strong>
+                {{ version.date_version|date:"d/m/Y" }}
+            </div>
+
+            <div class="version-line">
+
+                <strong>Statut :</strong>
+
+                <span class="status">
+                    {{ statut_label|default:version.statut|default:"-" }}
+                </span>
+
+            </div>
+
+        </div>
+
     </div>
-    {% endif %}
-  </div>
-</div>
-{% empty %}
-<div class="box empty">Aucune étape renseignée.</div>
-{% endfor %}
 
-<div class="section-title"><span class="number">6</span><h2>Recommandations particulières</h2></div>
-{% for recommandation in version.recommandations.all %}
-<div class="box">
-  {% if recommandation.titre %}<strong>{{ recommandation.titre }}</strong>{% endif %}
-  <div>{{ recommandation.contenu }}</div>
 </div>
-{% empty %}
-<div class="box empty">Aucune recommandation renseignée.</div>
-{% endfor %}
 
-<div class="section-title"><span class="number">7</span><h2>Documents liés</h2></div>
-{% for document in version.documents.all %}
-<div class="box">
-  <strong>{{ document.titre }}</strong>
-  {% if document.reference %}<span class="small"> — Réf. {{ document.reference }}</span>{% endif %}
-  {% if document.description %}<div class="small">{{ document.description }}</div>{% endif %}
-</div>
-{% empty %}
-<div class="box empty">Aucun document lié.</div>
-{% endfor %}
 
-<div class="footer">
-  <span class="footer-left">{{ version.gamme.code }} · {{ version.code_version }}</span>
-  <div class="footer-center">Document généré automatiquement — Gamme opératoire de maintenance</div>
+<!-- ============================================================ -->
+<!-- 1. INFORMATIONS GÉNÉRALES -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        1. Informations générales
+    </div>
+
+    <div class="section-body">
+
+        <table class="info-table">
+
+            <tr>
+
+                <td>
+                    <span class="label">
+                        Code gamme
+                    </span>
+
+                    <span class="value">
+                        {{ version.gamme.code|default:"-" }}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="label">
+                        Désignation
+                    </span>
+
+                    <span class="value">
+                        {{ version.gamme.designation|default:"-" }}
+                    </span>
+                </td>
+
+                <td>
+                    <span class="label">
+                        Abréviation
+                    </span>
+
+                    <span class="value">
+                        {{ version.gamme.abreviation|default:"-" }}
+                    </span>
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td colspan="3">
+
+                    <span class="label">
+                        Description
+                    </span>
+
+                    <span class="value">
+                        {{ version.gamme.description|default:"-" }}
+                    </span>
+
+                </td>
+
+            </tr>
+
+        </table>
+
+        {% if version.gamme.image_url %}
+        <div style="margin-top:8px;text-align:center;border:1px solid #d1d5db;background:#f8fafc;padding:6px;">
+            <img src="{{ version.gamme.image_url }}" alt="{{ version.gamme.designation }}" style="max-width:100%;max-height:190px;object-fit:contain;">
+        </div>
+        {% endif %}
+
+    </div>
+
 </div>
+
+
+<!-- ============================================================ -->
+<!-- 2. ÉQUIPEMENT -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        2. Équipement concerné
+    </div>
+
+    <div class="section-body">
+
+        {% if version.gamme.equipement %}
+
+            <table class="equipment-table">
+
+                <tr>
+
+                    <td class="equipment-photo-cell">
+
+                        <div class="equipment-photo">
+
+                            {% if version.gamme.equipement.image_url %}
+
+                                <img
+                                    src="{{ version.gamme.equipement.image_url }}"
+                                    alt="Équipement"
+                                >
+
+                            {% else %}
+
+                                <div class="no-photo">
+                                    <span>
+                                        Photo de l'équipement
+                                        <br>
+                                        non disponible
+                                    </span>
+                                </div>
+
+                            {% endif %}
+
+                        </div>
+
+                    </td>
+
+
+                    <td class="equipment-info-cell">
+
+                        <table class="info-table">
+
+                            <tr>
+
+                                <td>
+                                    <span class="label">
+                                        Code
+                                    </span>
+
+                                    <span class="value">
+                                        {{ version.gamme.equipement.code|default:"-" }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="label">
+                                        Nom
+                                    </span>
+
+                                    <span class="value">
+                                        {{ version.gamme.equipement.nom|default:"-" }}
+                                    </span>
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td>
+                                    <span class="label">
+                                        Constructeur
+                                    </span>
+
+                                    <span class="value">
+                                        {{ version.gamme.equipement.constructeur|default:"-" }}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    <span class="label">
+                                        Type
+                                    </span>
+
+                                    <span class="value">
+                                        {{ version.gamme.equipement.type|default:"-" }}
+                                    </span>
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td colspan="2">
+
+                                    <span class="label">
+                                        Référence
+                                    </span>
+
+                                    <span class="value">
+                                        {{ version.gamme.equipement.reference|default:"-" }}
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                            <tr>
+
+                                <td colspan="2">
+
+                                    <span class="label">
+                                        Description
+                                    </span>
+
+                                    <span class="value">
+                                        {{ version.gamme.equipement.description|default:"-" }}
+                                    </span>
+
+                                </td>
+
+                            </tr>
+
+                        </table>
+
+                    </td>
+
+                </tr>
+
+            </table>
+
+        {% else %}
+
+            <div class="empty">
+                Aucun équipement associé.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 3. MAINTENANCE -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        3. Paramètres de maintenance
+    </div>
+
+    <div class="section-body">
+
+        <table class="maintenance-table">
+
+            <tr>
+
+                <td>
+
+                    <span class="maintenance-label">
+                        Type
+                    </span>
+
+                    <span class="maintenance-value">
+                        {{ type_maintenance_label|default:version.type_maintenance|default:"-" }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <span class="maintenance-label">
+                        Périodicité
+                    </span>
+
+                    <span class="maintenance-value">
+                        {{ version.periodicite|default:"-" }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <span class="maintenance-label">
+                        Main d'œuvre
+                    </span>
+
+                    <span class="maintenance-value">
+                        {{ version.main_oeuvre|default:"0" }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <span class="maintenance-label">
+                        Durée
+                    </span>
+
+                    <span class="maintenance-value">
+                        {{ version.duree_minutes|default:"0" }} min
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <span class="maintenance-label">
+                        Production
+                    </span>
+
+                    <span class="maintenance-value">
+
+                        {% if version.production %}
+                            OUI
+                        {% else %}
+                            NON
+                        {% endif %}
+
+                    </span>
+
+                </td>
+
+            </tr>
+
+        </table>
+
+        <table class="info-table" style="margin-top:8px;"><tr><td><span class="label">Type d'arrêt</span><span class="value">{{ version.type_arret|default:"Aucun" }}</span></td><td><span class="label">Arrêt requis</span><span class="value">{% if version.arret %}OUI{% else %}NON{% endif %}</span></td></tr></table>
+
+        <br>
+
+        <table class="info-table">
+
+            <tr>
+
+                <td>
+                    <span class="label">
+                        Référentiel
+                    </span>
+
+                    <span class="value">
+
+                        {% if version.referentiel %}
+                            OUI
+                        {% else %}
+                            NON
+                        {% endif %}
+
+                    </span>
+                </td>
+
+                <td>
+                    <span class="label">
+                        Rapport
+                    </span>
+
+                    <span class="value">
+
+                        {% if version.rapport %}
+                            OUI
+                        {% else %}
+                            NON
+                        {% endif %}
+
+                    </span>
+                </td>
+
+                <td>
+                    <span class="label">
+                        Arrêt
+                    </span>
+
+                    <span class="value">
+
+                        {% if version.arret %}
+                            OUI
+                        {% else %}
+                            NON
+                        {% endif %}
+
+                    </span>
+                </td>
+
+                <td>
+                    <span class="label">
+                        Dégradé
+                    </span>
+
+                    <span class="value">
+
+                        {% if version.degrade %}
+                            OUI
+                        {% else %}
+                            NON
+                        {% endif %}
+
+                    </span>
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 4. RÉDACTION -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        4. Rédaction et validation
+    </div>
+
+    <div class="section-body">
+
+        <table class="info-table">
+
+            <tr>
+
+                <td>
+
+                    <span class="label">
+                        Rédacteur
+                    </span>
+
+                    <span class="value">
+                        {{ version.redacteur|default:"-" }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <span class="label">
+                        Valideur
+                    </span>
+
+                    <span class="value">
+                        {{ version.valideur|default:"-" }}
+                    </span>
+
+                </td>
+
+                <td>
+
+                    <span class="label">
+                        Date
+                    </span>
+
+                    <span class="value">
+                        {{ version.date_version|date:"d/m/Y" }}
+                    </span>
+
+                </td>
+
+            </tr>
+
+            <tr>
+
+                <td colspan="3">
+
+                    <span class="label">
+                        Modifications
+                    </span>
+
+                    <span class="value">
+                        {{ version.modifications|default:"-" }}
+                    </span>
+
+                </td>
+
+            </tr>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 5. SÉCURITÉ / RISQUES -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        5. Règles de sécurité et risques
+    </div>
+
+    <div class="section-body">
+
+        <div class="label" style="margin-bottom:5px;">Équipements de protection individuelle (EPI)</div>
+        <table class="risk-grid"><tr>
+        {% for ve in version.version_epis.all %}
+            <td><div class="risk-card"><div class="risk-photo">{% if ve.epi.image_url %}<img src="{{ ve.epi.image_url }}" alt="{{ ve.epi.nom }}">{% else %}<div class="no-photo"><span>Sans image</span></div>{% endif %}</div><div class="risk-info"><div class="risk-name">{{ ve.epi.nom }}</div>{% if ve.epi.description %}<div class="risk-description">{{ ve.epi.description }}</div>{% endif %}</div></div></td>
+            {% if forloop.counter|divisibleby:2 and not forloop.last %}</tr><tr>{% endif %}
+        {% empty %}<td colspan="2"><div class="empty">Aucun EPI associé.</div></td>{% endfor %}
+        </tr></table>
+
+        <div class="label" style="margin:10px 0 5px;">Équipements de protection collective (EPC)</div>
+        <table class="risk-grid"><tr>
+        {% for epc in pdf_epcs %}
+            <td><div class="risk-card"><div class="risk-photo">{% if epc.image_url %}<img src="{{ epc.image_url }}" alt="{{ epc.nom }}">{% else %}<div class="no-photo"><span>Sans image</span></div>{% endif %}</div><div class="risk-info"><div class="risk-name">{{ epc.nom }}</div>{% if epc.description %}<div class="risk-description">{{ epc.description }}</div>{% endif %}</div></div></td>
+            {% if forloop.counter|divisibleby:2 and not forloop.last %}</tr><tr>{% endif %}
+        {% empty %}<td colspan="2"><div class="empty">Aucun EPC associé.</div></td>{% endfor %}
+        </tr></table>
+
+        <div class="label" style="margin:10px 0 5px;">Risques</div>
+
+        {% if version.version_risques.all %}
+
+            <table class="risk-grid">
+
+                <tr>
+
+                {% for vr in version.version_risques.all %}
+
+                    <td>
+
+                        <div class="risk-card">
+
+                            <div class="risk-photo">
+
+                                {% if vr.risque.image_url %}
+
+                                    <img
+                                        src="{{ vr.risque.image_url }}"
+                                        alt="{{ vr.risque.nom }}"
+                                    >
+
+                                {% else %}
+
+                                    <div class="no-photo">
+                                        <span>
+                                            Sans photo
+                                        </span>
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                            <div class="risk-info">
+
+                                <div class="risk-name">
+                                    {{ vr.risque.nom }}
+                                </div>
+
+                                {% if vr.risque.description %}
+
+                                    <div class="risk-description">
+                                        {{ vr.risque.description }}
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    {% if forloop.counter|divisibleby:2 and not forloop.last %}
+                        </tr><tr>
+                    {% endif %}
+
+                {% empty %}
+
+                    <td colspan="2">
+
+                        <div class="empty">
+                            Aucun risque associé.
+                        </div>
+
+                    </td>
+
+                {% endfor %}
+
+                </tr>
+
+            </table>
+
+        {% else %}
+
+            <div class="empty">
+                Aucun risque associé.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 6. OUTILLAGES -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        6. Outillages et accessoires
+    </div>
+
+    <div class="section-body">
+
+        {% if version.version_outillages.all %}
+
+            <table class="tool-grid">
+
+                <tr>
+
+                {% for vo in version.version_outillages.all %}
+
+                    <td>
+
+                        <div class="tool-card">
+
+                            <div class="tool-photo">
+
+                                {% if vo.outillage.image_url %}
+
+                                    <img
+                                        src="{{ vo.outillage.image_url }}"
+                                        alt="{{ vo.outillage.nom }}"
+                                    >
+
+                                {% else %}
+
+                                    <div class="no-photo">
+                                        <span>
+                                            Photo non disponible
+                                        </span>
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+
+                            <div class="tool-info">
+
+                                <div class="tool-name">
+                                    {{ vo.outillage.nom }}
+                                </div>
+
+                                {% if vo.outillage.description %}
+
+                                    <div class="tool-description">
+                                        {{ vo.outillage.description }}
+                                    </div>
+
+                                {% endif %}
+
+                                <div class="quantity">
+                                    Quantité :
+                                    {{ vo.quantite|default:"1" }}
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </td>
+
+                    {% if forloop.counter|divisibleby:3 and not forloop.last %}
+                        </tr><tr>
+                    {% endif %}
+
+                {% empty %}
+
+                    <td colspan="3">
+
+                        <div class="empty">
+                            Aucun outillage associé.
+                        </div>
+
+                    </td>
+
+                {% endfor %}
+
+                </tr>
+
+            </table>
+
+        {% else %}
+
+            <div class="empty">
+                Aucun outillage associé.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 7. PIÈCES DE RECHANGE -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        7. Pièces de rechange
+    </div>
+
+    <div class="section-body">
+
+        {% if version.version_pieces_rechange.all %}
+
+            <table class="parts-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Photo
+                        </th>
+
+                        <th>
+                            Code
+                        </th>
+
+                        <th>
+                            Désignation
+                        </th>
+
+                        <th>
+                            Constructeur
+                        </th>
+
+                        <th>
+                            Référence
+                        </th>
+
+                        <th>
+                            Qté
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                {% for vp in version.version_pieces_rechange.all %}
+
+                    <tr>
+
+                        <td>
+
+                            {% if vp.piece.image_url %}
+
+                                <img
+                                    src="{{ vp.piece.image_url }}"
+                                    class="part-image"
+                                    alt="{{ vp.piece.nom }}"
+                                >
+
+                            {% else %}
+
+                                -
+
+                            {% endif %}
+
+                        </td>
+
+                        <td>
+                            {{ vp.piece.code|default:"-" }}
+                        </td>
+
+                        <td>
+                            {{ vp.piece.nom }}
+                        </td>
+
+                        <td>
+                            {{ vp.piece.constructeur|default:"-" }}
+                        </td>
+
+                        <td>
+                            {{ vp.piece.reference|default:"-" }}
+                        </td>
+
+                        <td>
+                            {{ vp.quantite|default:"1" }}
+                        </td>
+
+                    </tr>
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="6">
+
+                            <div class="empty">
+                                Aucune pièce de rechange.
+                            </div>
+
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        {% else %}
+
+            <div class="empty">
+                Aucune pièce de rechange associée.
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 8. ÉTAPES OPÉRATOIRES -->
+<!-- ============================================================ -->
+
+<div class="section page-break">
+
+    <div class="section-title">
+        8. Liste des actions et étapes opératoires
+    </div>
+
+    <div class="section-body">
+
+        {% for etape in version.etapes.all %}
+
+            <div class="step">
+
+                <div class="step-header">
+
+                    <div class="step-number">
+                        {{ etape.numero }}
+                    </div>
+
+                    <div class="step-title">
+                        Étape {{ etape.numero }} :
+                        {{ etape.titre }}
+                    </div>
+
+                    <div class="step-duration">
+
+                        Durée
+
+                        <br>
+
+                        <strong>
+                            {{ etape.duree_minutes|default:"0" }}
+                            min
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <div class="step-content">
+
+                    {% if etape.description %}
+
+                        <div class="step-description">
+                            {{ etape.description }}
+                        </div>
+
+                    {% endif %}
+
+
+                    {% if etape.actions.all %}
+
+                        <div class="actions-title">
+                            Actions à réaliser
+                        </div>
+
+                        <ol class="actions-list">
+
+                            {% for action in etape.actions.all %}
+
+                                <li>
+                                    {{ action.contenu }}
+                                </li>
+
+                            {% endfor %}
+
+                        </ol>
+
+                    {% endif %}
+
+
+                    {% if etape.images.all %}
+
+                        <div class="actions-title">
+                            Photos de l'intervention
+                        </div>
+
+                        <table class="step-gallery">
+
+                            <tr>
+
+                            {% for image in etape.images.all %}
+
+                                <td>
+
+                                    <div class="photo-card">
+
+                                        {% if image.image_url %}
+
+                                            <img
+                                                src="{{ image.image_url }}"
+                                                alt="Photo étape {{ etape.numero }}"
+                                            >
+
+                                        {% endif %}
+
+                                        {% if image.description %}
+
+                                            <div class="photo-caption">
+                                                {{ image.description }}
+                                            </div>
+
+                                        {% endif %}
+
+                                    </div>
+
+                                </td>
+
+                                {% if forloop.counter|divisibleby:3 and not forloop.last %}
+                                    </tr><tr>
+                                {% endif %}
+
+                            {% endfor %}
+
+                            </tr>
+
+                        </table>
+
+                    {% endif %}
+
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="empty">
+                Aucune étape opératoire enregistrée.
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 9. RECOMMANDATIONS -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        9. Recommandations particulières / Informations
+    </div>
+
+    <div class="section-body">
+
+        {% for recommandation in version.recommandations.all %}
+
+            <div class="recommendation">
+
+                {% if recommandation.titre %}
+
+                    <div class="recommendation-title">
+                        {{ recommandation.titre }}
+                    </div>
+
+                {% endif %}
+
+                <div class="recommendation-content">
+                    {{ recommandation.contenu }}
+                </div>
+
+            </div>
+
+        {% empty %}
+
+            <div class="empty">
+                Aucune recommandation enregistrée.
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 10. DOCUMENTS LIÉS -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        10. Documents liés
+    </div>
+
+    <div class="section-body">
+
+        {% for document in version.documents.all %}
+
+            <div class="document">
+
+                <div class="document-title">
+                    {{ document.titre }}
+                </div>
+
+                {% if document.reference %}
+
+                    <div class="document-reference">
+
+                        Référence :
+                        {{ document.reference }}
+
+                    </div>
+
+                {% endif %}
+
+                {% if document.description %}
+
+                    <div class="document-description">
+                        {{ document.description }}
+                    </div>
+
+                {% endif %}
+
+                {% if document.fichier_url %}
+
+                    <div class="document-url">
+                        {{ document.fichier_url }}
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        {% empty %}
+
+            <div class="empty">
+                Aucun document lié.
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 11. HISTORIQUE -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        11. Historique de la version
+    </div>
+
+    <div class="section-body">
+
+        <table class="history-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Version
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Rédacteur
+                    </th>
+
+                    <th>
+                        Valideur
+                    </th>
+
+                    <th>
+                        Modification
+                    </th>
+
+                    <th>
+                        Statut
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td>
+                        {{ version.code_version|default:"V0" }}
+                    </td>
+
+                    <td>
+                        {{ version.date_version|date:"d/m/Y" }}
+                    </td>
+
+                    <td>
+                        {{ version.redacteur|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ version.valideur|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ version.modifications|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ statut_label|default:version.statut|default:"-" }}
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 12. VALIDATION -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        12. Validation
+    </div>
+
+    <div class="section-body">
+
+        <table class="signature-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Rédacteur
+                    </th>
+
+                    <th>
+                        Valideur
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td class="signature-space">
+
+                        {{ version.redacteur|default:"" }}
+
+                    </td>
+
+                    <td class="signature-space">
+
+                        {{ version.valideur|default:"" }}
+
+                    </td>
+
+                    <td class="signature-space">
+
+                        {{ version.date_version|date:"d/m/Y" }}
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
 </body>
+
 </html>

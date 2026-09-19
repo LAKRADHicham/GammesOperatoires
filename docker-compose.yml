@@ -1,0 +1,44 @@
+services:
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+
+    container_name: gammes-backend
+
+    env_file:
+      - ./backend/.env
+
+    environment:
+      DEBUG: "False"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,frontend"
+      CORS_ALLOWED_ORIGINS: "http://localhost:8080"
+      CSRF_TRUSTED_ORIGINS: "http://localhost:8080"
+      APP_BASE_URL: "http://localhost:8080"
+
+    expose:
+      - "8000"
+
+    restart: unless-stopped
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: "/api"
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-}
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+
+    container_name: gammes-frontend
+
+    ports:
+      - "8080:80"
+
+    depends_on:
+      - backend
+
+    restart: unless-stopped
+  

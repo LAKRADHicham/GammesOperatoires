@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 
 import {
+  Eye,
   ImagePlus,
   LoaderCircle,
   Pencil,
@@ -154,6 +155,9 @@ export default function ReferentielPage({
 
   const [editingId, setEditingId] =
     useState<string | null>(null);
+  
+  const [viewingItem, setViewingItem] =
+  useState<ReferentielItem | null>(null);
 
   const [error, setError] =
     useState("");
@@ -614,42 +618,32 @@ export default function ReferentielPage({
         {/* ACTIONS */}
 
         <div style={cardActions}>
+          <button
+            type="button"
+            onClick={() => setViewingItem(item)}
+            style={cardViewButton}
+          >
+            <Eye size={15} />
+            Voir
+          </button>
 
           <button
             type="button"
-            onClick={() =>
-              handleEdit(item)
-            }
-            style={
-              cardEditButton
-            }
+            onClick={() => handleEdit(item)}
+            style={cardEditButton}
           >
-            <Pencil
-              size={15}
-            />
-
+            <Pencil size={15} />
             Modifier
           </button>
 
-
           <button
             type="button"
-            onClick={() =>
-              void handleDelete(
-                item.id
-              )
-            }
-            style={
-              cardDeleteButton
-            }
+            onClick={() => void handleDelete(item.id)}
+            style={cardDeleteButton}
           >
-            <Trash2
-              size={15}
-            />
-
+            <Trash2 size={15} />
             Supprimer
           </button>
-
         </div>
 
       </article>
@@ -744,6 +738,16 @@ export default function ReferentielPage({
         )}
 
       </div>
+
+
+      <button
+        type="button"
+        onClick={() => setViewingItem(item)}
+        style={smallButton}
+      >
+        <Eye size={15} />
+        Voir
+      </button>
 
 
       <button
@@ -917,6 +921,55 @@ export default function ReferentielPage({
       {message && (
         <div style={successBox}>
           {message}
+        </div>
+      )}
+
+
+      {viewingItem && (
+        <div style={viewOverlay}>
+          <div style={viewModal}>
+            <div style={viewHeader}>
+              <h2 style={{ margin: 0, color: "#172B2A" }}>
+                Détail du référentiel
+              </h2>
+
+              <button
+                type="button"
+                onClick={() => setViewingItem(null)}
+                style={viewCloseButton}
+                title="Fermer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {imageField && getValue(viewingItem, imageField) && (
+              <div style={viewImageContainer}>
+                <img
+                  src={supabaseImageUrl(getValue(viewingItem, imageField))}
+                  alt={getValue(viewingItem, primaryField)}
+                  style={viewImage}
+                />
+              </div>
+            )}
+
+            <div style={viewFields}>
+              {fields.map((field) => {
+                const value = getValue(viewingItem, field.name);
+
+                if (field.type === "image" || !value) {
+                  return null;
+                }
+
+                return (
+                  <div key={field.name} style={viewField}>
+                    <div style={viewFieldLabel}>{field.label}</div>
+                    <div style={viewFieldValue}>{value}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
@@ -1779,12 +1832,30 @@ const cardActions:
     "grid",
 
   gridTemplateColumns:
-    "1fr 1fr",
+    "1fr 1fr 1fr",
 
   gap: 8,
 
   padding:
     "10px 16px 16px",
+};
+
+
+const cardViewButton:
+  React.CSSProperties = {
+  minHeight: 38,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  gap: 6,
+  border: "1px solid #B8D8F0",
+  borderRadius: 8,
+  padding: "7px 10px",
+  background: "#FFF",
+  color: "#2563EB",
+  cursor: "pointer",
+  fontWeight: 650,
+  whiteSpace: "nowrap",
 };
 
 
@@ -2062,4 +2133,101 @@ const stateBox:
 
   color:
     "#64748B",
+};
+
+const viewOverlay:
+  React.CSSProperties = {
+  position: "fixed",
+  inset: 0,
+  zIndex: 1000,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: 20,
+  background: "rgba(15, 23, 42, 0.45)",
+};
+
+const viewModal:
+  React.CSSProperties = {
+  width: "100%",
+  maxWidth: 650,
+  maxHeight: "85vh",
+  overflowY: "auto",
+  background: "#FFF",
+  borderRadius: 14,
+  padding: 22,
+  boxShadow: "0 20px 60px rgba(0,0,0,0.20)",
+};
+
+const viewHeader:
+  React.CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "space-between",
+  marginBottom: 20,
+};
+
+const viewCloseButton:
+  React.CSSProperties = {
+  width: 36,
+  height: 36,
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  border: "1px solid #DDE7E3",
+  borderRadius: 8,
+  background: "#FFF",
+  color: "#405A55",
+  cursor: "pointer",
+};
+
+const viewImageContainer:
+  React.CSSProperties = {
+  width: "100%",
+  height: 250,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  marginBottom: 20,
+  padding: 12,
+  boxSizing: "border-box",
+  background: "#F8FBFA",
+  border: "1px solid #DDE7E3",
+  borderRadius: 10,
+};
+
+const viewImage:
+  React.CSSProperties = {
+  maxWidth: "100%",
+  maxHeight: "100%",
+  objectFit: "contain",
+};
+
+const viewFields:
+  React.CSSProperties = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+  gap: 14,
+};
+
+const viewField:
+  React.CSSProperties = {
+  padding: 12,
+  background: "#F8FBFA",
+  borderRadius: 8,
+};
+
+const viewFieldLabel:
+  React.CSSProperties = {
+  marginBottom: 5,
+  color: "#64748B",
+  fontSize: 12,
+  fontWeight: 700,
+};
+
+const viewFieldValue:
+  React.CSSProperties = {
+  color: "#172B2A",
+  fontSize: 14,
+  overflowWrap: "anywhere",
 };

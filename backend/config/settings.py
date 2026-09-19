@@ -250,16 +250,14 @@ CORS_ALLOWED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         "CORS_ALLOWED_ORIGINS",
-        "http://localhost:5173",
+        "http://localhost:8080",
     ).split(",")
     if origin.strip()
 ]
 
-# Toutes les Preview URLs Vercel
 CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https://.*\.vercel\.app$",
 ]
-
 
 # ============================================================
 # CSRF
@@ -269,10 +267,20 @@ CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.getenv(
         "CSRF_TRUSTED_ORIGINS",
-        "http://localhost:5173",
+        "http://localhost:8080",
     ).split(",")
     if origin.strip()
 ]
+
+if "https://gammes-tawny.vercel.app" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(
+        "https://gammes-tawny.vercel.app"
+    )
+
+if "https://*.vercel.app" not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(
+        "https://*.vercel.app"
+    )
 
 # Domaine production
 if "https://gammes-tawny.vercel.app" not in CSRF_TRUSTED_ORIGINS:
@@ -346,6 +354,15 @@ SIMPLE_JWT = {
         False,
 }
 
+# ============================================================
+# GOOGLE OAUTH
+# ============================================================
+
+GOOGLE_CLIENT_ID = os.getenv(
+    "GOOGLE_CLIENT_ID",
+    "",
+)
+
 
 # ============================================================
 # APPLICATION URL
@@ -353,5 +370,5 @@ SIMPLE_JWT = {
 
 APP_BASE_URL = os.getenv(
     "APP_BASE_URL",
-    "http://localhost:5173",
+    "http://localhost:8080",
 )

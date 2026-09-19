@@ -124,6 +124,7 @@ class EquipementSerializer(serializers.ModelSerializer):
             # Informations complémentaires
             "type",
             "description",
+            "image_url",
 
             # Statut
             "actif",
@@ -346,6 +347,7 @@ class EquipementSerializer(serializers.ModelSerializer):
             "workorder_genere_par",
             "type",
             "description",
+            "image_url",
         ]
 
         for champ in champs_texte:

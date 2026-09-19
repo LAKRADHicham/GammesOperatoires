@@ -5,7 +5,7 @@ import axios, {
 
 function getApiBaseUrl(): string {
   const envUrl = import.meta.env.VITE_API_URL?.trim();
-  if (envUrl) return envUrl.replace(/\\/+$/, "");
+  if (envUrl) return envUrl.replace(/\/+$/, "");
   return "http://127.0.0.1:8000/api";
 }
 
