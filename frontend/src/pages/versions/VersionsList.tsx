@@ -29,11 +29,12 @@ type Version = {
   code_version: string;
 
   statut:
-    | "brouillon"
-    | "en_validation"
-    | "validee"
-    | "archivee"
-    | string;
+  | "en_cours_creation"
+  | "en_cours_modification"
+  | "en_validation"
+  | "validee"
+  | "archivee"
+  | string;
 
   date_version?: string | null;
 
@@ -73,10 +74,11 @@ const getVersionStatusLabel = (
   numeroVersion?: number
 ): string => {
   switch (statut) {
-    case "brouillon":
-      return numeroVersion === 0
-        ? "En cours de création"
-        : "En cours de modification";
+    case "en_cours_creation":
+      return "En cours de création";
+
+    case "en_cours_modification":
+      return "En cours de modification";
 
     case "en_validation":
       return "En cours de validation";
@@ -85,7 +87,13 @@ const getVersionStatusLabel = (
       return "Validée";
 
     case "archivee":
-      return "Archivé";
+      return "Archivée";
+
+    // Compatibilité avec les anciennes données
+    case "brouillon":
+      return numeroVersion === 0
+        ? "En cours de création"
+        : "En cours de modification";
 
     default:
       return "—";
@@ -101,7 +109,10 @@ const getStatusStyle = (
   statut?: string,
   numeroVersion?: number
 ): React.CSSProperties => {
-  if (statut === "brouillon" && numeroVersion === 0) {
+  if (
+    statut === "en_cours_creation" ||
+    (statut === "brouillon" && numeroVersion === 0)
+  ) {
     return {
       background: "#FFF4E5",
       color: "#B54708",
@@ -109,7 +120,10 @@ const getStatusStyle = (
     };
   }
 
-  if (statut === "brouillon") {
+  if (
+    statut === "en_cours_modification" ||
+    statut === "brouillon"
+  ) {
     return {
       background: "#EEF4FF",
       color: "#3538CD",
@@ -127,9 +141,9 @@ const getStatusStyle = (
 
   if (statut === "validee") {
     return {
-      background: "#EEF4FF",
-      color: "#3538CD",
-      border: "1px solid #C7D7FE",
+      background: "#ECFDF3",
+      color: "#027A48",
+      border: "1px solid #ABEFC6",
     };
   }
 
@@ -342,11 +356,23 @@ export default function VersionsList() {
   };
 
   const stats = useMemo(() => ({
-    total: versions.length,
-    brouillon: versions.filter((v) => v.statut === "brouillon").length,
-    validation: versions.filter((v) => v.statut === "en_validation").length,
-    validee: versions.filter((v) => v.statut === "validee").length,
-  }), [versions]);
+  total: versions.length,
+
+  enCours: versions.filter(
+    (v) =>
+      v.statut === "en_cours_creation" ||
+      v.statut === "en_cours_modification" ||
+      v.statut === "brouillon"
+  ).length,
+
+  validation: versions.filter(
+    (v) => v.statut === "en_validation"
+  ).length,
+
+  validee: versions.filter(
+    (v) => v.statut === "validee"
+  ).length,
+}), [versions]);
 
   const filteredVersions = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -538,7 +564,7 @@ export default function VersionsList() {
       }}>
         {[
           ["Total des versions", stats.total],
-          ["Brouillons", stats.brouillon],
+          ["En cours", stats.enCours],
           ["En validation", stats.validation],
           ["Validées", stats.validee],
         ].map(([label, value]) => (
@@ -582,7 +608,12 @@ export default function VersionsList() {
             }}
           >
             <option value="tous">Tous les statuts</option>
-            <option value="brouillon">Brouillon</option>
+            <option value="en_cours_creation">
+              En cours de création
+            </option>
+            <option value="en_cours_modification">
+              En cours de modification
+            </option>
             <option value="en_validation">En validation</option>
             <option value="validee">Validée</option>
             <option value="archivee">Archivée</option>

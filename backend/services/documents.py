@@ -32,12 +32,15 @@ except (ImportError, OSError):
 # ============================================================
 
 STATUT_LABELS = {
-    "brouillon": "Brouillon",
-    "en_validation": "En validation",
+    "en_cours_creation": "En cours de création",
+    "en_cours_modification": "En cours de modification",
+    "en_validation": "En cours de validation",
     "validee": "Validée",
     "archivee": "Archivée",
-}
 
+    # Compatibilité avec les anciennes données
+    "brouillon": "Brouillon",
+}
 
 TYPE_MAINTENANCE_LABELS = {
     "preventif": "Préventive",

@@ -38,38 +38,26 @@ function statusLabel(
   numeroVersion?: number | null,
 ): string {
   switch (value) {
-    // --------------------------------------------------------
-    // BROUILLON
-    // --------------------------------------------------------
+    case "en_cours_creation":
+      return "En cours de création";
 
-    case "brouillon":
-      return numeroVersion === 0
-        ? "En cours de création"
-        : "En cours de modification";
-
-    // --------------------------------------------------------
-    // VALIDATION
-    // --------------------------------------------------------
+    case "en_cours_modification":
+      return "En cours de modification";
 
     case "en_validation":
       return "En cours de validation";
 
-    // --------------------------------------------------------
-    // ANCIEN STATUT TECHNIQUE "VALIDEE"
-    //
-    // On ne l'affiche plus comme "Validée"
-    // afin de respecter les 4 statuts de l'application.
-    // --------------------------------------------------------
-
     case "validee":
-      return "En cours de modification";
-
-    // --------------------------------------------------------
-    // ARCHIVE
-    // --------------------------------------------------------
+      return "Validée";
 
     case "archivee":
-      return "Archivé";
+      return "Archivée";
+
+    // Compatibilité avec les anciennes données
+    case "brouillon":
+      return numeroVersion === 0
+        ? "En cours de création"
+        : "En cours de modification";
 
     default:
       return "—";

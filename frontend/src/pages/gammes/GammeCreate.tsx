@@ -13,7 +13,7 @@ import {
   Trash2,
   X,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import api from "../../api/axios";
 import { supabaseImageUrl } from "../../utils/supabaseImage";
@@ -30,6 +30,15 @@ type PaginatedResponse<T> = {
   next?: string | null;
   previous?: string | null;
   results: T[];
+};
+
+// Entreprise pouvant être associée à la gamme.
+// Le nom et le logo proviennent du référentiel Entreprises / Logos.
+type Entreprise = {
+  id: string;
+  nom: string;
+  logo_url?: string | null;
+  actif?: boolean;
 };
 
 type Equipement = {
@@ -71,6 +80,7 @@ type GammeVersion = {
   id: string;
   numero_version?: number;
   code_version?: string;
+  statut?: string;
 };
 
 type CurrentUser = {
@@ -88,7 +98,23 @@ type PieceLibre = {
   quantite: number;
 };
 
-type ActionDraft = { localId: string; contenu: string };
+
+type DocumentDraft = {
+  localId: string;
+  titre: string;
+  description: string;
+  fichier_url: string;
+  nom_fichier: string;
+};
+
+type RecommandationDraft = {
+  localId: string;
+  description: string;
+};
+type ActionDraft = {
+  localId: string;
+  contenu: string;
+};
 type EtapeImageDraft = { localId: string; image_url: string };
 type EtapeDraft = {
   localId: string; numero: number; titre: string;
@@ -98,6 +124,7 @@ type EtapeDraft = {
 type FormState = {
   code: string;
   designation: string;
+  entreprise: string;
   abreviation: string;
   equipement_nom: string;
   equipement_code: string;
@@ -128,6 +155,7 @@ type FormState = {
 const initialForm: FormState = {
   code: "",
   designation: "",
+  entreprise: "",
   abreviation: "",
   equipement_nom: "",
   equipement_code: "",
@@ -276,10 +304,14 @@ function formatApiError(data: unknown): string | null {
  */
 export default function GammeCreate() {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+
+  const isEditMode = Boolean(id);
 
   const [currentStep, setCurrentStep] = useState(0);
   const [form, setForm] = useState<FormState>(initialForm);
   const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [entreprises, setEntreprises] = useState<Entreprise[]>([]);
   const [equipmentMode, setEquipmentMode] = useState<"existing" | "new">("existing");
   const [equipmentSearch, setEquipmentSearch] = useState("");
   const [equipmentResults, setEquipmentResults] = useState<Equipement[]>([]);
@@ -301,9 +333,16 @@ export default function GammeCreate() {
   const [selectedRisques, setSelectedRisques] = useState<string[]>([]);
   const [selectedOutillages, setSelectedOutillages] = useState<Record<string, number>>({});
 
+  
+  const [documents, setDocuments] = useState<DocumentDraft[]>([]);
+  const [recommandations, setRecommandations] = useState<RecommandationDraft[]>([]);
   const [piecesLibres, setPiecesLibres] = useState<PieceLibre[]>([]);
   const [pieceDraft, setPieceDraft] = useState({ nom: "", reference: "", quantite: 1 });
   const [etapes, setEtapes] = useState<EtapeDraft[]>(() => [createEmptyEtape(1)]);
+  // Ces fonctions et états sont conservés pour la section
+// Documents & recommandations qui sera intégrée au wizard.
+  void documents;
+  void recommandations;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -316,6 +355,8 @@ export default function GammeCreate() {
   const [createdGammeId, setCreatedGammeId] = useState<string | null>(null);
   const [createdVersionId, setCreatedVersionId] = useState<string | null>(null);
   const [createdCode, setCreatedCode] = useState("");
+  const [editDataLoaded, setEditDataLoaded] = useState(false);
+  const [editVersionPrepared, setEditVersionPrepared] = useState(false);
   const [exporting, setExporting] = useState<"pdf" | "word" | null>(null);
 
   /**
@@ -328,19 +369,30 @@ export default function GammeCreate() {
       setError("");
 
       try {
-        const [episResponse, risquesResponse, outillagesResponse, meResponse] =
-          await Promise.all([
-            api.get<SimpleRef[] | PaginatedResponse<SimpleRef>>("/epis/"),
-            api.get<SimpleRef[] | PaginatedResponse<SimpleRef>>("/risques/"),
-            api.get<SimpleRef[] | PaginatedResponse<SimpleRef>>("/outillages/"),
-            api.get<CurrentUser>("/me/"),
-          ]);
+  const [
+    episResponse,
+    risquesResponse,
+    outillagesResponse,
+    meResponse,
+    entreprisesResponse,
+  ] = await Promise.all([
+    api.get<SimpleRef[] | PaginatedResponse<SimpleRef>>("/epis/"),
+    api.get<SimpleRef[] | PaginatedResponse<SimpleRef>>("/risques/"),
+    api.get<SimpleRef[] | PaginatedResponse<SimpleRef>>("/outillages/"),
+    api.get<CurrentUser>("/me/"),
+    api.get<Entreprise[] | PaginatedResponse<Entreprise>>("/entreprises/"),
+  ]);
 
-        setCurrentUser(meResponse.data);
-        setEpis(extractResults<SimpleRef>(episResponse.data).filter(Boolean));
-        setRisques(extractResults<SimpleRef>(risquesResponse.data).filter(Boolean));
-        setOutillages(extractResults<SimpleRef>(outillagesResponse.data).filter(Boolean));
+  setCurrentUser(meResponse.data);
+  setEpis(extractResults<SimpleRef>(episResponse.data).filter(Boolean));
+  setRisques(extractResults<SimpleRef>(risquesResponse.data).filter(Boolean));
+  setOutillages(extractResults<SimpleRef>(outillagesResponse.data).filter(Boolean));
 
+  setEntreprises(
+    extractResults<Entreprise>(entreprisesResponse.data)
+      .filter((item) => item && item.actif !== false)
+      .sort((a, b) => a.nom.localeCompare(b.nom, "fr")),
+  );
         const optionalResponses = await Promise.allSettled([
           api.get<SimpleRef[] | PaginatedResponse<SimpleRef>>("/v2/epcs/"),
           api.get<RefValue[] | PaginatedResponse<RefValue>>("/v2/referentiels/?categorie=type_maintenance"),
@@ -406,13 +458,329 @@ export default function GammeCreate() {
     });
   }, [maintenanceTypes, periodicites, typesArret, typesRedaction]);
 
-  useEffect(() => {
+  /**
+ * MODE MODIFICATION
+ * Charge les données générales de la gamme existante
+ * ainsi que sa dernière version.
+ */
+useEffect(() => {
+  if (!isEditMode || !id || loading || editDataLoaded) return;
+
+  const loadExistingGamme = async () => {
+    setError("");
+
+    try {
+      // 1. Charger la gamme
+      const gammeResponse = await api.get<any>(`/gammes/${id}/`);
+      const gamme = gammeResponse.data;
+
+      // 2. Charger ses versions
+      const versionsResponse = await api.get<
+        GammeVersion[] | PaginatedResponse<GammeVersion>
+      >(`/gammes/${id}/versions/`);
+
+      const versions = extractResults<GammeVersion>(
+        versionsResponse.data
+      )
+        .slice()
+        .sort(
+          (a, b) =>
+            Number(b.numero_version ?? 0) -
+            Number(a.numero_version ?? 0)
+        );
+
+      const version = versions[0];
+
+      if (!version?.id) {
+        throw new Error(
+          "Aucune version disponible pour cette gamme."
+        );
+      }
+
+      // 3. Informations générales + maintenance
+      setForm((current) => ({
+        ...current,
+
+        code: gamme.code ?? "",
+        designation: gamme.designation ?? "",
+        abreviation: gamme.abreviation ?? "",
+
+        entreprise:
+          typeof gamme.entreprise === "object"
+            ? String(gamme.entreprise?.id ?? "")
+            : String(gamme.entreprise ?? ""),
+
+        corps_metier: gamme.corps_metier ?? "",
+        type_redaction: gamme.type_redaction ?? "",
+        image_url: gamme.image_url ?? "",
+
+        redacteur: (version as any).redacteur ?? "",
+        type_maintenance:
+          (version as any).type_maintenance ?? "",
+        periodicite:
+          (version as any).periodicite ?? "",
+        main_oeuvre: Number(
+          (version as any).main_oeuvre ?? 1
+        ),
+        type_arret:
+          (version as any).type_arret ?? "",
+
+        modifications:
+          (version as any).modifications ??
+          "Modification de la gamme",
+      }));
+
+      // 4. Charger l'équipement
+      const equipmentId =
+        typeof gamme.equipement === "object"
+          ? gamme.equipement?.id
+          : gamme.equipement;
+
+      if (equipmentId) {
+        const equipmentResponse =
+          await api.get<Equipement>(
+            `/equipements/${equipmentId}/`
+          );
+
+        chooseEquipment(equipmentResponse.data);
+        setEquipmentMode("existing");
+      }
+
+      // 5. Charger les données détaillées de la version
+const [
+  episAssocResponse,
+  epcsAssocResponse,
+  risquesAssocResponse,
+  outillagesAssocResponse,
+] = await Promise.all([
+  api.get("/version-epis/", {
+    params: { version: version.id },
+  }),
+  api.get("/v2/version-epcs/", {
+    params: { version: version.id },
+  }),
+  api.get("/version-risques/", {
+    params: { version: version.id },
+  }),
+  api.get("/version-outillages/", {
+    params: { version: version.id },
+  }),
+]);
+
+const existingEpis = extractResults<any>(episAssocResponse.data);
+const existingEpcs = extractResults<any>(epcsAssocResponse.data);
+const existingRisques = extractResults<any>(risquesAssocResponse.data);
+const existingOutillages = extractResults<any>(
+  outillagesAssocResponse.data,
+);
+
+setSelectedEpis(
+  existingEpis
+    .map((item) =>
+      String(
+        typeof item.epi === "object"
+          ? item.epi?.id ?? ""
+          : item.epi ?? "",
+      ),
+    )
+    .filter(Boolean),
+);
+
+setSelectedEpcs(
+  existingEpcs
+    .map((item) =>
+      String(
+        typeof item.epc === "object"
+          ? item.epc?.id ?? ""
+          : item.epc ?? "",
+      ),
+    )
+    .filter(Boolean),
+);
+
+setSelectedRisques(
+  existingRisques
+    .map((item) =>
+      String(
+        typeof item.risque === "object"
+          ? item.risque?.id ?? ""
+          : item.risque ?? "",
+      ),
+    )
+    .filter(Boolean),
+);
+
+setSelectedOutillages(
+  Object.fromEntries(
+    existingOutillages
+      .map((item) => {
+        const outillageId =
+          typeof item.outillage === "object"
+            ? item.outillage?.id
+            : item.outillage;
+
+        if (!outillageId) return null;
+
+        return [
+          String(outillageId),
+          Math.max(1, Number(item.quantite ?? 1)),
+        ];
+      })
+      .filter(Boolean) as [string, number][],
+  ),
+);
+
+// Charger les pièces de rechange de la version
+const piecesResponse = await api.get("/version-pieces/", {
+  params: { version: version.id },
+});
+
+const existingPieces = extractResults<any>(piecesResponse.data);
+
+setPiecesLibres(
+  existingPieces
+    .map((item) => {
+      const piece =
+        typeof item.piece === "object"
+          ? item.piece
+          : null;
+
+      if (!piece) {
+        return null;
+      }
+
+      return {
+        localId: createLocalId(),
+        nom: piece.nom ?? "",
+        reference: piece.reference ?? "",
+        quantite: Math.max(1, Number(item.quantite ?? 1)),
+      };
+    })
+    .filter(Boolean) as PieceLibre[],
+);
+
+      // Charger les documents et recommandations de la version
+const [
+  documentsResponse,
+  recommandationsResponse,
+] = await Promise.all([
+  api.get("/documents/", {
+    params: { version: version.id },
+  }),
+  api.get("/recommandations/", {
+    params: { version: version.id },
+  }),
+]);
+
+const existingDocuments = extractResults<any>(documentsResponse.data);
+const existingRecommandations = extractResults<any>(
+  recommandationsResponse.data,
+);
+
+setDocuments(
+  existingDocuments.map((document) => ({
+    localId: createLocalId(),
+    titre: document.titre ?? "",
+    description: document.description ?? "",
+    fichier_url: document.fichier_url ?? "",
+    nom_fichier: document.titre ?? "",
+  })),
+);
+
+setRecommandations(
+  existingRecommandations.map((recommandation) => ({
+    localId: createLocalId(),
+    description: recommandation.contenu ?? "",
+  })),
+);
+// Charger les étapes, actions et images de la version
+const etapesResponse = await api.get("/etapes/", {
+  params: { version: version.id },
+});
+
+const existingEtapes = extractResults<any>(etapesResponse.data)
+  .slice()
+  .sort(
+    (a, b) =>
+      Number(a.ordre ?? a.numero ?? 0) -
+      Number(b.ordre ?? b.numero ?? 0),
+  );
+
+setEtapes(
+  existingEtapes.length > 0
+    ? existingEtapes.map((etape, index) => ({
+        localId: createLocalId(),
+        numero: Number(etape.numero ?? index + 1),
+        titre: etape.titre ?? "",
+        duree_minutes: Number(etape.duree_minutes ?? 0),
+
+        actions: Array.isArray(etape.actions)
+          ? etape.actions
+              .slice()
+              .sort(
+                (a: any, b: any) =>
+                  Number(a.ordre ?? 0) - Number(b.ordre ?? 0),
+              )
+              .map((action: any) => ({
+                localId: createLocalId(),
+                contenu: action.contenu ?? "",
+              }))
+          : [],
+
+        images: Array.isArray(etape.images)
+          ? etape.images
+              .slice()
+              .sort(
+                (a: any, b: any) =>
+                  Number(a.ordre ?? 0) - Number(b.ordre ?? 0),
+              )
+              .map((image: any) => ({
+                localId: createLocalId(),
+                image_url: image.image_url ?? "",
+              }))
+          : [],
+      }))
+    : [createEmptyEtape(1)],
+);
+
+      // 5. Mémoriser la gamme/version actuellement modifiée
+      // Mémoriser la gamme/version actuellement modifiée
+    setCreatedGammeId(String(id));
+    setCreatedVersionId(String(version.id));
+    setCreatedCode(gamme.code ?? "");
+
+    // Si la dernière version est déjà une version de modification,
+    // on la réutilise directement sans créer un nouveau clone.
+    setEditVersionPrepared(
+      version.statut === "en_cours_modification",
+    );
+
+    setEditDataLoaded(true);
+    } catch (err: any) {
+      console.error(
+        "Erreur chargement gamme à modifier :",
+        err
+      );
+
+      setError(
+        err?.response?.data?.detail ||
+          err?.message ||
+          "Impossible de charger la gamme à modifier."
+      );
+    }
+  };
+
+  void loadExistingGamme();
+}, [isEditMode, id, loading, editDataLoaded]);
+
+   useEffect(() => {
     if (equipmentMode !== "existing") return;
     const query = equipmentSearch.trim();
     if (query.length < 2) {
       setEquipmentResults([]);
       return;
     }
+
     const timer = window.setTimeout(async () => {
       setEquipmentSearching(true);
       try {
@@ -476,8 +844,15 @@ export default function GammeCreate() {
   }, [currentUser]);
 
   /** Met à jour un seul champ du formulaire sans écraser les autres. */
-  const updateForm = <K extends keyof FormState>(key: K, value: FormState[K]) => {
-    setForm((current) => ({ ...current, [key]: value }));
+  /** Met à jour un seul champ du formulaire sans écraser les autres. */
+  const updateForm = <K extends keyof FormState>(
+    key: K,
+    value: FormState[K]
+  ) => {
+    setForm((current) => ({
+      ...current,
+      [key]: value,
+    }));
   };
 
   /**
@@ -548,6 +923,85 @@ export default function GammeCreate() {
   const removePieceLibre = (localId: string) => {
     setPiecesLibres((current) => current.filter((item) => item.localId !== localId));
   };
+  /** Ajoute une documentation vide. */
+const addDocument = () => {
+  setDocuments((current) => [
+    ...current,
+    {
+      localId: createLocalId(),
+      titre: "",
+      description: "",
+      fichier_url: "",
+      nom_fichier: "",
+    },
+  ]);
+  setError("");
+};
+
+/** Modifie un champ d'une documentation. */
+const updateDocument = (
+  localId: string,
+  field: keyof Omit<DocumentDraft, "localId">,
+  value: string,
+) => {
+  setDocuments((current) =>
+    current.map((document) =>
+      document.localId === localId
+        ? { ...document, [field]: value }
+        : document,
+    ),
+  );
+};
+
+/** Supprime une documentation. */
+const removeDocument = (localId: string) => {
+  setDocuments((current) =>
+    current.filter((document) => document.localId !== localId),
+  );
+};
+
+/** Ajoute une recommandation vide. */
+const addRecommandation = () => {
+  setRecommandations((current) => [
+    ...current,
+    {
+      localId: createLocalId(),
+      description: "",
+    },
+  ]);
+  setError("");
+};
+
+/** Modifie le texte d'une recommandation. */
+const updateRecommandation = (
+  localId: string,
+  description: string,
+) => {
+  setRecommandations((current) =>
+    current.map((recommandation) =>
+      recommandation.localId === localId
+        ? { ...recommandation, description }
+        : recommandation,
+    ),
+  );
+};
+
+/** Supprime une recommandation. */
+const removeRecommandation = (localId: string) => {
+  setRecommandations((current) =>
+    current.filter(
+      (recommandation) => recommandation.localId !== localId,
+    ),
+  );
+};
+// Fonctions conservées pour l'intégration de la section
+// Documents & recommandations.
+void addDocument;
+void updateDocument;
+void removeDocument;
+void addRecommandation;
+void updateRecommandation;
+void removeRecommandation;
 
   /** Bloque le passage à l’étape suivante si les champs obligatoires manquent. */
   /** Ajoute une étape locale avec une première action obligatoire. */
@@ -709,11 +1163,27 @@ export default function GammeCreate() {
     try {
       setSaveStage("Vérification du code de la gamme");
       const normalizedCode = form.code.trim().toUpperCase();
-      const existingResponse = await api.get("/gammes/", { params: { search: normalizedCode } });
+      const existingResponse = await api.get("/gammes/", {
+        params: { search: normalizedCode },
+      });
+
       const existingGammes = extractResults<any>(existingResponse.data);
-      if (existingGammes.some((item: any) => String(item?.code ?? "").trim().toUpperCase() === normalizedCode)) {
-        throw new Error(`Le code ${normalizedCode} existe déjà. Choisissez un autre code.`);
-      }
+
+      const duplicateGamme = existingGammes.some((item: any) => {
+      const sameCode =
+        String(item?.code ?? "").trim().toUpperCase() === normalizedCode;
+
+      const isCurrentGamme =
+        isEditMode && String(item?.id ?? "") === String(id ?? "");
+
+      return sameCode && !isCurrentGamme;
+    });
+
+    if (duplicateGamme) {
+      throw new Error(
+        `Le code ${normalizedCode} existe déjà. Choisissez un autre code.`
+      );
+    }
       let equipmentId: string;
       if (equipmentMode === "existing") {
         if (!selectedEquipment?.id) throw new Error("Aucun équipement existant sélectionné.");
@@ -750,66 +1220,158 @@ export default function GammeCreate() {
         equipmentId = String(equipmentResponse.data.id);
       }
 
-      currentSaveStage = "Création de la gamme";
-      setSaveStage(currentSaveStage);
+      currentSaveStage = isEditMode
+  ? "Mise à jour de la gamme"
+  : "Création de la gamme";
 
-      const gammeResponse = await api.post("/gammes/", {
-        code: form.code.trim(),
-        designation: form.designation.trim(),
-        abreviation: form.abreviation.trim() || null,
-        equipement: equipmentId,
-        description: null,
-        actif: true,
+    setSaveStage(currentSaveStage);
+
+    const gammePayload = {
+      code: form.code.trim(),
+      designation: form.designation.trim(),
+      abreviation: form.abreviation.trim() || null,
+      equipement: equipmentId,
+      entreprise: form.entreprise || null,
+      description: null,
+      actif: true,
+    };
+
+    const gammeResponse = isEditMode && id
+      ? await api.patch(`/gammes/${id}/`, gammePayload)
+      : await api.post("/gammes/", gammePayload);
+
+    const gammeId = String(gammeResponse.data.id);
+
+      currentSaveStage = isEditMode
+    ? "Préparation de la version modifiée"
+    : "Récupération de la version V0";
+
+  setSaveStage(currentSaveStage);
+
+  let version: GammeVersion;
+
+  if (isEditMode && createdVersionId) {
+      console.log("DEBUG MODIFICATION VERSION", {
+        createdVersionId,
+        editVersionPrepared,
+        isEditMode,
       });
+      if (!editVersionPrepared) {
+    // Premier enregistrement :
+    // créer une nouvelle version de modification à partir de la version source.
+    const cloneResponse = await api.post(
+      `/versions/${createdVersionId}/clone/`,
+      {
+        modifications:
+          form.modifications.trim() || "Modification de la gamme",
+      },
+    );
 
-      const gammeId = String(gammeResponse.data.id);
+    version = cloneResponse.data;
 
-      currentSaveStage = "Récupération de la version V0";
-      setSaveStage(currentSaveStage);
+    // À partir de maintenant, cette nouvelle version devient
+    // la version de travail utilisée pour les sauvegardes suivantes.
+    setCreatedVersionId(String(version.id));
+    setEditVersionPrepared(true);
+  } else {
+    // La version de modification existe déjà :
+    // ne surtout pas la cloner une deuxième fois.
+    version = {
+      id: createdVersionId,
+      statut: "en_cours_modification",
+    };
+  }
+} else {
+      const versionsResponse = await api.get<
+        GammeVersion[] | PaginatedResponse<GammeVersion>
+      >(`/gammes/${gammeId}/versions/`);
 
-      const versionsResponse = await api.get<GammeVersion[] | PaginatedResponse<GammeVersion>>(
-        `/gammes/${gammeId}/versions/`,
-      );
-
-      const version = extractResults(versionsResponse.data)
+      const versions = extractResults(versionsResponse.data)
         .slice()
-        .sort((a, b) => Number(b.numero_version ?? 0) - Number(a.numero_version ?? 0))[0];
+        .sort(
+          (a, b) =>
+            Number(b.numero_version ?? 0) -
+            Number(a.numero_version ?? 0),
+        );
 
-      if (!version) {
+      if (!versions[0]) {
         throw new Error("La version V0 n'a pas été créée automatiquement.");
       }
 
-      currentSaveStage = "Enregistrement des paramètres de maintenance";
-      setSaveStage(currentSaveStage);
+      version = versions[0];
+    }
 
-      await api.patch(`/versions/${version.id}/`, {
-        type_maintenance: form.type_maintenance,
-        periodicite: form.periodicite,
-        main_oeuvre: form.main_oeuvre,
-        duree_minutes: totalDurationMinutes,
-        modifications: form.modifications.trim(),
-        arret: form.type_arret !== "aucun",
-      });
+    if (!version?.id) {
+      throw new Error("Impossible de préparer la version de la gamme.");
+    }
 
-      await api.patch(`/v2/versions/${version.id}/metadata/`, {
-        type_arret: form.type_arret,
-        redacteur: form.redacteur.trim() || null,
-      });
+        currentSaveStage = "Enregistrement des paramètres de maintenance";
+        setSaveStage(currentSaveStage);
 
-      // Les métadonnées générales sont enregistrées seulement après V0 et ses
-      // paramètres de maintenance. Ainsi, une image trop volumineuse ne peut plus
-      // empêcher l'enregistrement des données métier principales de la version.
-      currentSaveStage = "Enregistrement des informations générales";
-      setSaveStage(currentSaveStage);
+        await api.patch(`/versions/${version.id}/`, {
+          type_maintenance: form.type_maintenance,
+          periodicite: form.periodicite,
+          main_oeuvre: form.main_oeuvre,
+          duree_minutes: totalDurationMinutes,
+          modifications: form.modifications.trim(),
+          arret: form.type_arret !== "aucun",
+        });
 
-      await api.patch(`/v2/gammes/${gammeId}/metadata/`, {
-        corps_metier: form.corps_metier || null,
-        type_redaction: form.type_redaction || null,
-        image_url: form.image_url || null,
-      });
+        await api.patch(`/v2/versions/${version.id}/metadata/`, {
+          type_arret: form.type_arret,
+          redacteur: form.redacteur.trim() || null,
+        });
 
-      currentSaveStage = "Association des EPI";
-      setSaveStage(currentSaveStage);
+        // Les métadonnées générales sont enregistrées seulement après V0 et ses
+        // paramètres de maintenance. Ainsi, une image trop volumineuse ne peut plus
+        // empêcher l'enregistrement des données métier principales de la version.
+        currentSaveStage = "Enregistrement des informations générales";
+        setSaveStage(currentSaveStage);
+
+        await api.patch(`/v2/gammes/${gammeId}/metadata/`, {
+          corps_metier: form.corps_metier || null,
+          type_redaction: form.type_redaction || null,
+          image_url: form.image_url || null,
+        });
+
+        if (isEditMode) {
+    currentSaveStage = "Nettoyage des associations de la version modifiée";
+    setSaveStage(currentSaveStage);
+
+    const [
+      existingEpis,
+      existingEpcs,
+      existingRisques,
+      existingOutillages,
+    ] = await Promise.all([
+      api.get("/version-epis/", { params: { version: version.id } }),
+      api.get("/v2/version-epcs/", { params: { version: version.id } }),
+      api.get("/version-risques/", { params: { version: version.id } }),
+      api.get("/version-outillages/", { params: { version: version.id } }),
+    ]);
+
+    const associations = [
+      ...extractResults<any>(existingEpis.data).map((item) => ({
+        url: `/version-epis/${item.id}/`,
+      })),
+      ...extractResults<any>(existingEpcs.data).map((item) => ({
+        url: `/v2/version-epcs/${item.id}/`,
+      })),
+      ...extractResults<any>(existingRisques.data).map((item) => ({
+        url: `/version-risques/${item.id}/`,
+      })),
+      ...extractResults<any>(existingOutillages.data).map((item) => ({
+        url: `/version-outillages/${item.id}/`,
+      })),
+    ];
+
+    for (const association of associations) {
+      await api.delete(association.url);
+    }
+  }
+
+        currentSaveStage = "Association des EPI";
+        setSaveStage(currentSaveStage);
 
       for (const epi of selectedEpis) {
         await api.post("/version-epis/", {
@@ -849,6 +1411,24 @@ export default function GammeCreate() {
         });
       }
 
+
+      if (isEditMode) {
+  currentSaveStage = "Synchronisation des pièces existantes";
+  setSaveStage(currentSaveStage);
+
+  const existingPiecesResponse = await api.get("/version-pieces/", {
+    params: { version: version.id },
+  });
+
+  const existingPieces = extractResults<any>(
+    existingPiecesResponse.data,
+  );
+
+  for (const existingPiece of existingPieces) {
+    await api.delete(`/version-pieces/${existingPiece.id}/`);
+  }
+}
+
       currentSaveStage = "Enregistrement des pièces de rechange";
       setSaveStage(currentSaveStage);
 
@@ -869,6 +1449,23 @@ export default function GammeCreate() {
         });
       }
 
+      if (isEditMode) {
+  currentSaveStage = "Synchronisation des étapes existantes";
+  setSaveStage(currentSaveStage);
+
+  const existingEtapesResponse = await api.get("/etapes/", {
+    params: { version: version.id },
+  });
+
+  const existingEtapes = extractResults<any>(
+    existingEtapesResponse.data,
+  );
+
+  for (const existingEtape of existingEtapes) {
+    await api.delete(`/etapes/${existingEtape.id}/`);
+  }
+}
+
       currentSaveStage = "Enregistrement des étapes";
       setSaveStage(currentSaveStage);
       for (const [i, etape] of etapes.entries()) {
@@ -881,11 +1478,88 @@ export default function GammeCreate() {
       currentSaveStage = "Recalcul de la durée totale";
       setSaveStage(currentSaveStage);
 
+      if (isEditMode) {
+  currentSaveStage = "Synchronisation des documents et recommandations";
+  setSaveStage(currentSaveStage);
+
+  const [
+    existingDocumentsResponse,
+    existingRecommandationsResponse,
+  ] = await Promise.all([
+    api.get("/documents/", {
+      params: { version: version.id },
+    }),
+    api.get("/recommandations/", {
+      params: { version: version.id },
+    }),
+  ]);
+
+  const existingDocuments = extractResults<any>(
+    existingDocumentsResponse.data,
+  );
+
+  const existingRecommandations = extractResults<any>(
+    existingRecommandationsResponse.data,
+  );
+
+  for (const document of existingDocuments) {
+    await api.delete(`/documents/${document.id}/`);
+  }
+
+  for (const recommandation of existingRecommandations) {
+    await api.delete(`/recommandations/${recommandation.id}/`);
+  }
+}
+
+      // ============================================================
+// DOCUMENTS
+// ============================================================
+
+for (const document of documents) {
+  // Ignorer une ligne totalement vide
+  if (
+    !document.titre.trim() &&
+    !document.fichier_url
+  ) {
+    continue;
+  }
+
+  await api.post("/documents/", {
+    version: version.id,
+    titre: document.titre.trim(),
+    reference: "",
+    description: document.description.trim() || null,
+    fichier_url: document.fichier_url || null,
+  });
+}
+
+
+// ============================================================
+// RECOMMANDATIONS
+// ============================================================
+
+for (let index = 0; index < recommandations.length; index += 1) {
+  const recommandation = recommandations[index];
+
+  if (!recommandation.description.trim()) {
+    continue;
+  }
+
+  await api.post("/recommandations/", {
+    version: version.id,
+    titre: `Recommandation ${index + 1}`,
+    contenu: recommandation.description.trim(),
+  });
+}
+
       // Le backend recalcule la durée depuis les étapes réellement enregistrées.
       // Le PDF et le Word utiliseront ainsi la valeur persistée en base.
       await api.post(`/versions/${version.id}/recalculate/`);
 
-      currentSaveStage = "Création terminée";
+      currentSaveStage = isEditMode
+      ? "Modification enregistrée"
+      : "Création terminée";
+      
       setSaveStage(currentSaveStage);
 
       // On reste sur la page et on mémorise les UUID créés.
@@ -952,7 +1626,14 @@ export default function GammeCreate() {
           ? `/versions/${createdVersionId}/export_pdf/`
           : `/versions/${createdVersionId}/export_word/`;
 
-      const response = await api.post(endpoint, {}, { responseType: "blob" });
+      const response = await api.post(
+        endpoint,
+        {},
+        {
+          responseType: "blob",
+          timeout: 120000,
+        },
+      );
       const extension = format === "pdf" ? "pdf" : "docx";
       downloadBlob(response.data, `${createdCode || "gamme"}_V0.${extension}`);
     } catch (err: any) {
@@ -1074,7 +1755,7 @@ export default function GammeCreate() {
     );
   }
 
-  if (createdVersionId) {
+  if (createdVersionId && !isEditMode) {
     return (
       <div className="gamme-create-page">
         <div className="page-header">
@@ -1231,6 +1912,27 @@ export default function GammeCreate() {
                   placeholder="Ex. Contrôle mensuel du convoyeur"
                 />
               </label>
+              <label>
+                  <span>Entreprise</span>
+
+                  <select
+                    value={form.entreprise}
+                    onChange={(event) =>
+                      updateForm("entreprise", event.target.value)
+                    }
+                  >
+                    <option value="">Sélectionner une entreprise</option>
+
+                    {entreprises.map((entreprise) => (
+                      <option
+                        key={entreprise.id}
+                        value={entreprise.id}
+                      >
+                        {entreprise.nom}
+                      </option>
+                    ))}
+                  </select>
+                </label>
 
               <label>
                 <span>Corps de métier</span>
@@ -1493,28 +2195,214 @@ export default function GammeCreate() {
         )}
 
         {currentStep === 4 && (
-          <>
-            <div className="section-heading">
-              <h2>Documents liés & recommandations particulières</h2>
-              <p>
-                Cette étape est réservée aux documents associés à la gamme et aux recommandations
-                particulières. Les champs seront conservés séparément des moyens et de la sécurité.
-              </p>
+  <>
+    <div className="section-heading">
+      <h2>Documents & recommandations</h2>
+      <p>
+        Ajoutez les documents utiles à la gamme ainsi que les recommandations
+        particulières.
+      </p>
+    </div>
+
+    <div className="documents-recommendations">
+
+      {/* =========================
+          DOCUMENTS
+          ========================= */}
+      <div className="document-section">
+        <div className="profile-section-title">
+          Documents
+        </div>
+
+        {documents.length === 0 && (
+          <div className="empty-state">
+            Aucun document ajouté pour le moment.
+          </div>
+        )}
+
+        {documents.map((document, index) => (
+          <div
+            key={document.localId}
+            className="document-card"
+          >
+            <div className="document-card-header">
+              <strong>Document {index + 1}</strong>
+
+              <button
+                type="button"
+                className="danger-button"
+                onClick={() =>
+                  removeDocument(document.localId)
+                }
+              >
+                <Trash2 size={16} />
+                Supprimer
+              </button>
             </div>
 
             <div className="form-grid">
-              <div className="form-span-2 profile-section-title">Documents liés</div>
-              <div className="form-span-2 empty-state">
-                Aucun document ajouté pour le moment.
+
+              <label className="form-span-2">
+                <span>Titre du fichier</span>
+
+                <input
+                  type="text"
+                  value={document.titre}
+                  onChange={(event) =>
+                    updateDocument(
+                      document.localId,
+                      "titre",
+                      event.target.value
+                    )
+                  }
+                  placeholder="Ex. Notice constructeur"
+                />
+              </label>
+
+              <label className="form-span-2">
+                <span>Fichier ou image</span>
+
+                <input
+                  type="file"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg,.webp"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+
+                    if (!file) return;
+
+                    updateDocument(
+                      document.localId,
+                      "nom_fichier",
+                      file.name
+                    );
+
+                    const reader = new FileReader();
+
+                    reader.onload = () => {
+                      const result = String(reader.result ?? "");
+                      
+                      updateDocument(
+                        document.localId,
+                        "fichier_url",
+                        result
+                      );
+                    };
+
+                    reader.onerror = () => {
+                      setError(
+                        `Impossible de lire le fichier ${file.name}.`
+                      );
+                    };
+
+reader.readAsDataURL(file);
+                  }}
+                />
+
+                {document.nom_fichier && (
+                  <div className="document-file-preview">
+                    <span className="helper-text">
+                      Fichier sélectionné :{" "}
+                      <strong>{document.nom_fichier}</strong>
+                    </span>
+
+                    {document.fichier_url.startsWith("data:image/") && (
+                      <img
+                        src={document.fichier_url}
+                        alt={document.titre || document.nom_fichier}
+                        className="document-preview-image"
+                      />
+                    )}
+                  </div>
+                )}
+              </label>
+
+            </div>
+          </div>
+        ))}
+
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={addDocument}
+        >
+          <Plus size={16} />
+          Ajouter un document
+        </button>
+      </div>
+
+
+      {/* =========================
+          RECOMMANDATIONS
+          ========================= */}
+      <div className="recommendation-section">
+
+        <div className="profile-section-title">
+          Recommandations
+        </div>
+
+        {recommandations.length === 0 && (
+          <div className="empty-state">
+            Aucune recommandation ajoutée pour le moment.
+          </div>
+        )}
+
+        {recommandations.map(
+          (recommandation, index) => (
+            <div
+              key={recommandation.localId}
+              className="recommendation-card"
+            >
+              <div className="document-card-header">
+                <strong>
+                  Recommandation {index + 1}
+                </strong>
+
+                <button
+                  type="button"
+                  className="danger-button"
+                  onClick={() =>
+                    removeRecommandation(
+                      recommandation.localId
+                    )
+                  }
+                >
+                  <Trash2 size={16} />
+                  Supprimer
+                </button>
               </div>
 
-              <div className="form-span-2 profile-section-title">Recommandations particulières / Informations</div>
-              <div className="form-span-2 empty-state">
-                Aucune recommandation ajoutée pour le moment.
-              </div>
+              <label>
+                <span>Description</span>
+
+                <textarea
+                  rows={5}
+                  value={recommandation.description}
+                  onChange={(event) =>
+                    updateRecommandation(
+                      recommandation.localId,
+                      event.target.value
+                    )
+                  }
+                  placeholder="Saisissez la recommandation..."
+                />
+              </label>
             </div>
-          </>
+          )
         )}
+
+        <button
+          type="button"
+          className="secondary-button"
+          onClick={addRecommandation}
+        >
+          <Plus size={16} />
+          Ajouter une recommandation
+        </button>
+
+      </div>
+    </div>
+  </>
+)}
 
         {currentStep === 5 && (
           <>

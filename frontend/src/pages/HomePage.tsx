@@ -357,7 +357,7 @@ export default function HomePage() {
 
                       <div>
                         <span className="status-dot draft" />
-                        Brouillons
+                        En cours
                       </div>
 
                     </div>

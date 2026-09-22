@@ -820,3 +820,123 @@
   .gamme-create-page .equipment-mode-switch button{width:100%}
 }
 @media(max-width:480px){.gamme-create-page .page-header h1{font-size:23px}.gamme-create-page .wizard-step{min-height:46px}}
+/* ============================================================
+   DOCUMENTS & RECOMMANDATIONS
+   ============================================================ */
+
+.documents-recommendations {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.document-section,
+.recommendation-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.document-card,
+.recommendation-card {
+  border: 1px solid #dbe3e0;
+  border-radius: 10px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.document-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.document-card-header strong {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.document-card input[type="file"] {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px;
+  border: 1px dashed #b8c5c0;
+  border-radius: 8px;
+  background: #f8faf9;
+  cursor: pointer;
+}
+
+.recommendation-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.recommendation-card textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 12px;
+  resize: vertical;
+  border: 1px solid #d1d9d6;
+  border-radius: 8px;
+  font: inherit;
+  box-sizing: border-box;
+}
+
+.recommendation-card textarea:focus {
+  outline: none;
+  border-color: #4f8f75;
+}
+
+.danger-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px solid #dc2626;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #dc2626;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+
+.danger-button:hover {
+  background: #fef2f2;
+}
+
+@media (max-width: 700px) {
+  .document-card-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+/* ============================================================
+   APERÇU DES DOCUMENTS
+   ============================================================ */
+
+.document-file-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.document-preview-image {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 280px;
+  max-height: 200px;
+  object-fit: contain;
+  padding: 5px;
+  border: 1px solid #dbe3e0;
+  border-radius: 8px;
+  background: #ffffff;
+}

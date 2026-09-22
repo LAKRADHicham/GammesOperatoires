@@ -48,6 +48,19 @@ class Equipement(models.Model):
     Table PostgreSQL correspondante :
         public.equipements
     """
+# ============================================================
+# ENTREPRISES / LOGOS
+# ============================================================
+# Cette table contient les entreprises pouvant être associées
+# à une gamme opératoire.
+#
+# Le logo n'est pas enregistré directement dans PostgreSQL :
+# seul son chemin / URL est conservé dans le champ logo_url.
+#
+# La table "entreprises" est créée directement dans Supabase.
+# managed = False empêche Django de créer ou modifier cette
+# table automatiquement via les migrations.
+# ============================================================
 
     # ----------------------------------------------------------------
     # IDENTIFIANT TECHNIQUE
@@ -352,7 +365,45 @@ class Equipement(models.Model):
         """
         return f"{self.code} - {self.nom}"
 
+# ====================================================================
+# ENTREPRISES / LOGOS
+# ====================================================================
+class Entreprise(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False,
+    )
 
+    nom = models.CharField(
+        max_length=255,
+        unique=True,
+    )
+
+    logo_url = models.TextField(
+        null=True,
+        blank=True,
+    )
+
+    actif = models.BooleanField(
+        default=True,
+    )
+
+    created_at = models.DateTimeField(
+        default=timezone.now,
+        editable=False,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        managed = False
+        db_table = "entreprises"
+
+    def __str__(self):
+        return self.nom
 # ====================================================================
 # GAMMES OPERATOIRES
 # ====================================================================
@@ -415,6 +466,27 @@ class GammeOperatoire(models.Model):
     # related_name="gammes" permet par exemple :
     #
     # equipement.gammes.all()
+        # ============================================================
+    # ENTREPRISE / LOGO
+    # ============================================================
+    # Entreprise associée à la gamme opératoire.
+    #
+    # PostgreSQL stocke uniquement l'UUID dans :
+    # entreprise_id
+    #
+    # Le nom et le logo restent centralisés dans la table
+    # "entreprises". Une modification du logo de l'entreprise
+    # pourra ainsi être répercutée sans dupliquer les données.
+    # ============================================================
+
+    entreprise = models.ForeignKey(
+        Entreprise,
+        models.SET_NULL,
+        db_column="entreprise_id",
+        related_name="gammes",
+        null=True,
+        blank=True,
+    )
 
 
     description = models.TextField(

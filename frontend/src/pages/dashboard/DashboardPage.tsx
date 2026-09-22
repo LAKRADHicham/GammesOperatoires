@@ -48,8 +48,11 @@ function labelStatus(
   value?: string | null,
 ) {
   switch (value) {
-    case "brouillon":
-      return "Brouillon";
+    case "en_cours_creation":
+      return "En cours de création";
+
+    case "en_cours_modification":
+      return "En cours de modification";
 
     case "en_validation":
       return "En validation";
@@ -59,6 +62,10 @@ function labelStatus(
 
     case "archivee":
       return "Archivée";
+
+    // Compatibilité avec les anciennes données
+    case "brouillon":
+      return "En cours";
 
     default:
       return value || "Non renseigné";
@@ -151,6 +158,11 @@ function statusClassName(
 
     case "archivee":
       return "is-archived";
+
+    case "en_cours_creation":
+    case "en_cours_modification":
+    case "brouillon":
+      return "is-draft";
 
     default:
       return "is-draft";

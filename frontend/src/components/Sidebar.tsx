@@ -9,6 +9,7 @@ import {
   FileText,
   Gauge,
   HardHat,
+  Building2,
   History,
   ListChecks,
   LogOut,
@@ -81,6 +82,11 @@ const referenceItems: NavItem[] = [
     path: "/equipements",
     icon: <HardHat size={17} />,
   },
+  {
+  label: "Entreprises / Logos",
+  path: "/entreprises",
+  icon: <Building2 size={17} />,
+},
   {
     label: "Corps de métier",
     path: "/referentiels?categorie=corps_metier",
@@ -259,6 +265,7 @@ export default function Sidebar() {
   const referenceActive = useMemo(() => {
     return (
       location.pathname === "/equipements" ||
+      location.pathname === "/entreprises" ||
       location.pathname.startsWith("/referentiels")
     );
   }, [location.pathname]);

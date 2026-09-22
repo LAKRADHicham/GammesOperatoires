@@ -73,6 +73,15 @@
             padding: 10px;
             border-right: 1px solid rgba(255,255,255,0.4);
         }
+        .company-logo {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 150px;
+            max-height: 70px;
+            margin: 0 auto;
+            object-fit: contain;
+        }
 
         .logo-title {
             font-size: 14px;
@@ -216,6 +225,24 @@
             font-size: 9px;
             font-weight: 500;
         }
+        .gamme-main-photo {
+            display: table;
+            width: auto;
+            height: auto;
+            margin: 8px auto 0;
+            padding: 4px;
+            border: 1px solid #d7e6dd;
+            background: #ffffff;
+        }
+
+        .gamme-main-photo img {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 680px;
+            max-height: 190px;
+            object-fit: contain;
+        }
 
         .equipment-table {
             width: 100%;
@@ -233,31 +260,127 @@
             vertical-align: top;
         }
 
+        /* ============================================================
+   IMAGES FLEXIBLES — cadre adapté à la taille réelle de l'image
+   ============================================================ */
+
+        /* Image équipement */
         .equipment-photo {
-            width: 100%;
-            height: 145px;
-            border: 1px solid #d1d5db;
-            background: #f8fafc;
+            display: inline-block;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            padding: 4px;
+            border: 1px solid #d7e6dd;
+            background: #ffffff;
             text-align: center;
         }
 
         .equipment-photo img {
-            width: 100%;
-            height: 100%;
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 220px;
+            max-height: 160px;
+            object-fit: contain;
+        }
+
+        /* EPI / EPC / Risques */
+        .risk-photo {
+            display: inline-block;
+            width: auto;
+            height: auto;
+            max-width: 100%;
+            padding: 3px;
+            border: 1px solid #d7e6dd;
+            background: #ffffff;
+        }
+
+        .risk-photo img {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 135px;
+            max-height: 100px;
+            object-fit: contain;
+        }
+
+        /* Outillages */
+        .tool-card {
+            display: inline-block;
+            width: auto;
+            max-width: 100%;
+            min-height: 0;
+            border: 1px solid #d7e6dd;
+            vertical-align: top;
+        }
+
+        .tool-photo {
+            display: block;
+            width: auto;
+            height: auto;
+            padding: 3px;
+            border-bottom: 1px solid #d7e6dd;
+            text-align: center;
+        }
+
+        .tool-photo img {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 180px;
+            max-height: 120px;
+            margin: 0 auto;
+            object-fit: contain;
+        }
+
+        /* Photos des étapes */
+        .photo-card {
+            display: inline-block;
+            width: auto;
+            max-width: 100%;
+            border: 1px solid #d7e6dd;
+            background: #ffffff;
+        }
+
+        .photo-card img {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 220px;
+            max-height: 160px;
+            padding: 3px;
+            object-fit: contain;
+        }
+
+        /* Image principale de la gamme */
+        .gamme-main-photo {
+            display: table;
+            width: auto;
+            height: auto;
+            margin: 8px auto 0;
+            padding: 4px;
+            border: 1px solid #d7e6dd;
+            background: #ffffff;
+        }
+
+        .gamme-main-photo img {
+            display: block;
+            width: auto;
+            height: auto;
+            max-width: 680px;
+            max-height: 190px;
             object-fit: contain;
         }
 
         .no-photo {
-            height: 100%;
-            display: table;
-            width: 100%;
+            display: inline-block;
+            width: auto;
+            height: auto;
+            padding: 8px;
             color: #94a3b8;
             font-size: 8px;
-        }
-
-        .no-photo span {
-            display: table-cell;
-            vertical-align: middle;
+            text-align: center;
         }
 
         .maintenance-table {
@@ -297,54 +420,70 @@
             text-transform: uppercase;
         }
 
-        .risk-grid {
-            width: 100%;
-            border-collapse: collapse;
-        }
+        /* ============================================================
+   GALERIE EPI / EPC / RISQUES
+   Maximum 4 éléments par ligne
+   ============================================================ */
 
-        .risk-grid td {
-            width: 50%;
-            padding: 4px;
-            vertical-align: top;
-        }
+    .risk-grid {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+    }
 
-        .risk-card {
-            border: 1px solid #d1d5db;
-            min-height: 75px;
-            display: table;
-            width: 100%;
-        }
+    .risk-grid td {
+        width: 25%;
+        padding: 5px;
+        vertical-align: top;
+        text-align: center;
+    }
 
-        .risk-photo {
-            display: table-cell;
-            width: 75px;
-            padding: 4px;
-            vertical-align: middle;
-        }
+    .risk-card {
+        display: inline-block;
+        width: auto;
+        max-width: 100%;
+        border: none;
+        background: transparent;
+        text-align: center;
+        vertical-align: top;
+        page-break-inside: avoid;
+    }
 
-        .risk-photo img {
-            width: 65px;
-            height: 60px;
-            object-fit: contain;
-            border: 1px solid #e5e7eb;
-        }
+    .risk-photo {
+        display: inline-block;
+        width: auto;
+        padding: 3px;
+        border: 1px solid #d1d5db;
+        background: #ffffff;
+        text-align: center;
+    }
 
-        .risk-info {
-            display: table-cell;
-            vertical-align: middle;
-            padding: 5px;
-        }
+    .risk-photo img {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 135px;
+        max-height: 100px;
+        object-fit: contain;
+    }
 
-        .risk-name {
-            font-size: 8.5px;
-            font-weight: bold;
-        }
+    .risk-info {
+        display: block;
+        width: 100%;
+        padding: 4px 2px 0;
+        text-align: center;
+    }
 
-        .risk-description {
-            margin-top: 3px;
-            font-size: 7.5px;
-            color: #64748b;
-        }
+    .risk-name {
+        font-size: 8px;
+        font-weight: bold;
+    }
+
+    .risk-description {
+        margin-top: 2px;
+        font-size: 7px;
+        color: #64748b;
+    }
 
         .tool-grid {
             width: 100%;
@@ -355,24 +494,6 @@
             width: 33.33%;
             padding: 4px;
             vertical-align: top;
-        }
-
-        .tool-card {
-            border: 1px solid #d1d5db;
-            min-height: 135px;
-        }
-
-        .tool-photo {
-            width: 100%;
-            height: 80px;
-            border-bottom: 1px solid #d1d5db;
-            text-align: center;
-        }
-
-        .tool-photo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
         }
 
         .tool-info {
@@ -509,14 +630,6 @@
             background: #ffffff;
         }
 
-        .photo-card img {
-            display: block;
-            width: 100%;
-            height: 125px;
-            object-fit: contain;
-            padding: 3px;
-        }
-
         .photo-caption {
             border-top: 1px solid #e5e7eb;
             padding: 4px;
@@ -638,13 +751,116 @@
         .header-reference { border-top-color:#d1d5db; background:#f3f4f6; }
         .section-title { background:#e5e7eb; color:#111827; border:1px solid #d1d5db; }
         .status { border-color:#9ca3af; color:#374151; background:#f9fafb; }
-        .step-number { background:#4b5563; }
+        /* ============================================================
+   PALETTE FINALE : BLANC + VERT MAINTENANCE
+   ============================================================ */
 
-    </style>
+        body {
+            background: #ffffff;
+            color: #1f2937;
+        }
 
-</head>
+        .header {
+            border-color: #b7d9c7;
+        }
 
-<body>
+        .header-top {
+            background: #ffffff;
+            color: #163d2b;
+            border-bottom: 1px solid #b7d9c7;
+        }
+
+        .header-logo {
+            border-right-color: #d7eadf;
+        }
+
+        .header-qr {
+            border-left-color: #d7eadf;
+        }
+
+        .header-reference {
+            border-top-color: #b7d9c7;
+            background: #f1f8f4;
+        }
+
+        .reference-code,
+        .reference-title,
+        .version-line strong {
+            color: #176b45;
+        }
+
+        .section-title {
+            background: #e5f3eb;
+            color: #155b3b;
+            border: 1px solid #b7d9c7;
+        }
+
+        .section-body {
+            border-color: #d7e6dd;
+            background: #ffffff;
+        }
+
+        .info-table td,
+        .maintenance-table td,
+        .parts-table td,
+        .parts-table th,
+        .signature-table td,
+        .signature-table th,
+        .history-table td,
+        .history-table th {
+            border-color: #d7e6dd;
+        }
+
+        .parts-table th,
+        .signature-table th,
+        .history-table th {
+            background: #f1f8f4;
+            color: #155b3b;
+        }
+
+        .label,
+        .maintenance-label {
+            color: #4f7d66;
+        }
+
+        .maintenance-value {
+            color: #155b3b;
+        }
+
+        .status {
+            border-color: #8fc5a7;
+            color: #155b3b;
+            background: #f1f8f4;
+        }
+
+        .step-header {
+            background: #f1f8f4;
+            border-bottom-color: #b7d9c7;
+        }
+
+        .step-number {
+            background: #2f7d57;
+            color: #ffffff;
+        }
+
+        .step-title {
+            color: #155b3b;
+        }
+
+        .recommendation {
+            border-left-color: #2f7d57;
+            background: #f5faf7;
+        }
+
+        .recommendation-title {
+            color: #155b3b;
+        }
+
+            </style>
+
+        </head>
+
+        <body>
 
 <!-- ============================================================ -->
 <!-- EN-TÊTE -->
@@ -652,22 +868,19 @@
 
 <div class="header">
 
-    <div class="header-top">
+            <div class="header-top">
 
-        <div class="header-logo">
+                <div class="header-logo">
 
-            <div class="logo-title">
-                GAMMES
-                <br>
-                OPÉRATOIRES
-            </div>
-
-            <div class="logo-subtitle">
-                DOCUMENT DE MAINTENANCE
-            </div>
+            {% if version.gamme.entreprise and version.gamme.entreprise.logo_url %}
+                <img
+                    src="{{ version.gamme.entreprise.logo_url }}"
+                    alt="{{ version.gamme.entreprise.nom|default:'Logo entreprise' }}"
+                    class="company-logo"
+                >
+            {% endif %}
 
         </div>
-
 
         <div class="header-main">
 
@@ -813,8 +1026,11 @@
         </table>
 
         {% if version.gamme.image_url %}
-        <div style="margin-top:8px;text-align:center;border:1px solid #d1d5db;background:#f8fafc;padding:6px;">
-            <img src="{{ version.gamme.image_url }}" alt="{{ version.gamme.designation }}" style="max-width:100%;max-height:190px;object-fit:contain;">
+        <div class="gamme-main-photo">
+            <img
+                src="{{ version.gamme.image_url }}"
+                alt="{{ version.gamme.designation }}"
+            >
         </div>
         {% endif %}
 
@@ -822,15 +1038,165 @@
 
 </div>
 
-
 <!-- ============================================================ -->
-<!-- 2. ÉQUIPEMENT -->
+<!-- 2. HISTORIQUE -->
 <!-- ============================================================ -->
 
 <div class="section">
 
     <div class="section-title">
-        2. Équipement concerné
+        2. Historique de la version
+    </div>
+
+    <div class="section-body">
+
+        <table class="history-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Version
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Rédacteur
+                    </th>
+
+                    <th>
+                        Valideur
+                    </th>
+
+                    <th>
+                        Modification
+                    </th>
+
+                    <th>
+                        Statut
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td>
+                        {{ version.code_version|default:"V0" }}
+                    </td>
+
+                    <td>
+                        {{ version.date_version|date:"d/m/Y" }}
+                    </td>
+
+                    <td>
+                        {{ version.redacteur|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ version.valideur|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ version.modifications|default:"-" }}
+                    </td>
+
+                    <td>
+                        {{ statut_label|default:version.statut|default:"-" }}
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ============================================================ -->
+<!-- 3. VALIDATION -->
+<!-- ============================================================ -->
+
+<div class="section">
+
+    <div class="section-title">
+        3. Validation
+    </div>
+
+    <div class="section-body">
+
+        <table class="signature-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Rédacteur
+                    </th>
+
+                    <th>
+                        Valideur
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+                <tr>
+
+                    <td class="signature-space">
+
+                        {{ version.redacteur|default:"" }}
+
+                    </td>
+
+                    <td class="signature-space">
+
+                        {{ version.valideur|default:"" }}
+
+                    </td>
+
+                    <td class="signature-space">
+
+                        {{ version.date_version|date:"d/m/Y" }}
+
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- 4. ÉQUIPEMENT -->
+<!-- ============================================================ -->
+
+<div class="section page-break">
+
+    <div class="section-title">
+        4. Équipement concerné
     </div>
 
     <div class="section-body">
@@ -975,13 +1341,13 @@
 
 
 <!-- ============================================================ -->
-<!-- 3. MAINTENANCE -->
+<!-- 5. MAINTENANCE -->
 <!-- ============================================================ -->
 
 <div class="section">
 
     <div class="section-title">
-        3. Paramètres de maintenance
+        5. Paramètres de maintenance
     </div>
 
     <div class="section-body">
@@ -1061,264 +1427,146 @@
         </table>
 
         <table class="info-table" style="margin-top:8px;"><tr><td><span class="label">Type d'arrêt</span><span class="value">{{ version.type_arret|default:"Aucun" }}</span></td><td><span class="label">Arrêt requis</span><span class="value">{% if version.arret %}OUI{% else %}NON{% endif %}</span></td></tr></table>
-
-        <br>
-
-        <table class="info-table">
-
-            <tr>
-
-                <td>
-                    <span class="label">
-                        Référentiel
-                    </span>
-
-                    <span class="value">
-
-                        {% if version.referentiel %}
-                            OUI
-                        {% else %}
-                            NON
-                        {% endif %}
-
-                    </span>
-                </td>
-
-                <td>
-                    <span class="label">
-                        Rapport
-                    </span>
-
-                    <span class="value">
-
-                        {% if version.rapport %}
-                            OUI
-                        {% else %}
-                            NON
-                        {% endif %}
-
-                    </span>
-                </td>
-
-                <td>
-                    <span class="label">
-                        Arrêt
-                    </span>
-
-                    <span class="value">
-
-                        {% if version.arret %}
-                            OUI
-                        {% else %}
-                            NON
-                        {% endif %}
-
-                    </span>
-                </td>
-
-                <td>
-                    <span class="label">
-                        Dégradé
-                    </span>
-
-                    <span class="value">
-
-                        {% if version.degrade %}
-                            OUI
-                        {% else %}
-                            NON
-                        {% endif %}
-
-                    </span>
-                </td>
-
-            </tr>
-
-        </table>
+        
 
     </div>
 
 </div>
 
 
+
 <!-- ============================================================ -->
-<!-- 4. RÉDACTION -->
+<!-- 6. SÉCURITÉ / RISQUES -->
 <!-- ============================================================ -->
 
 <div class="section">
 
     <div class="section-title">
-        4. Rédaction et validation
+        6. Règles de sécurité et risques
     </div>
 
     <div class="section-body">
 
-        <table class="info-table">
-
-            <tr>
-
-                <td>
-
-                    <span class="label">
-                        Rédacteur
-                    </span>
-
-                    <span class="value">
-                        {{ version.redacteur|default:"-" }}
-                    </span>
-
-                </td>
-
-                <td>
-
-                    <span class="label">
-                        Valideur
-                    </span>
-
-                    <span class="value">
-                        {{ version.valideur|default:"-" }}
-                    </span>
-
-                </td>
-
-                <td>
-
-                    <span class="label">
-                        Date
-                    </span>
-
-                    <span class="value">
-                        {{ version.date_version|date:"d/m/Y" }}
-                    </span>
-
-                </td>
-
-            </tr>
-
-            <tr>
-
-                <td colspan="3">
-
-                    <span class="label">
-                        Modifications
-                    </span>
-
-                    <span class="value">
-                        {{ version.modifications|default:"-" }}
-                    </span>
-
-                </td>
-
-            </tr>
-
-        </table>
-
-    </div>
-
+        <div class="label" style="margin-bottom:5px;">
+    Équipements de protection individuelle (EPI)
 </div>
 
+<table class="risk-grid">
+    <tr>
 
-<!-- ============================================================ -->
-<!-- 5. SÉCURITÉ / RISQUES -->
-<!-- ============================================================ -->
+        {% for epi in pdf_epis %}
 
-<div class="section">
+            <td>
+                <div class="risk-card">
 
-    <div class="section-title">
-        5. Règles de sécurité et risques
-    </div>
+                    <div class="risk-photo">
 
-    <div class="section-body">
+                        {% if epi.image_url %}
+                            <img
+                                src="{{ epi.image_url }}"
+                                alt="{{ epi.nom }}"
+                            >
+                        {% else %}
+                            <div class="no-photo">
+                                Sans image
+                            </div>
+                        {% endif %}
 
-        <div class="label" style="margin-bottom:5px;">Équipements de protection individuelle (EPI)</div>
-        <table class="risk-grid"><tr>
-        {% for ve in version.version_epis.all %}
-            <td><div class="risk-card"><div class="risk-photo">{% if ve.epi.image_url %}<img src="{{ ve.epi.image_url }}" alt="{{ ve.epi.nom }}">{% else %}<div class="no-photo"><span>Sans image</span></div>{% endif %}</div><div class="risk-info"><div class="risk-name">{{ ve.epi.nom }}</div>{% if ve.epi.description %}<div class="risk-description">{{ ve.epi.description }}</div>{% endif %}</div></div></td>
-            {% if forloop.counter|divisibleby:2 and not forloop.last %}</tr><tr>{% endif %}
-        {% empty %}<td colspan="2"><div class="empty">Aucun EPI associé.</div></td>{% endfor %}
-        </tr></table>
+                    </div>
+
+                    <div class="risk-info">
+
+                        <div class="risk-name">
+                            {{ epi.nom }}
+                        </div>
+
+                        {% if epi.description %}
+                            <div class="risk-description">
+                                {{ epi.description }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+            </td>
+
+            {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                </tr><tr>
+            {% endif %}
+
+        {% empty %}
+
+            <td colspan="4">
+                <div class="empty">
+                    Aucun EPI associé.
+                </div>
+            </td>
+
+        {% endfor %}
+
+    </tr>
+</table>
 
         <div class="label" style="margin:10px 0 5px;">Équipements de protection collective (EPC)</div>
         <table class="risk-grid"><tr>
         {% for epc in pdf_epcs %}
             <td><div class="risk-card"><div class="risk-photo">{% if epc.image_url %}<img src="{{ epc.image_url }}" alt="{{ epc.nom }}">{% else %}<div class="no-photo"><span>Sans image</span></div>{% endif %}</div><div class="risk-info"><div class="risk-name">{{ epc.nom }}</div>{% if epc.description %}<div class="risk-description">{{ epc.description }}</div>{% endif %}</div></div></td>
-            {% if forloop.counter|divisibleby:2 and not forloop.last %}</tr><tr>{% endif %}
-        {% empty %}<td colspan="2"><div class="empty">Aucun EPC associé.</div></td>{% endfor %}
+            {% if forloop.counter|divisibleby:4 and not forloop.last %}</tr><tr>{% endif %}
+        {% empty %}<td colspan="4"><div class="empty">Aucun EPC associé.</div></td>{% endfor %}
         </tr></table>
 
-        <div class="label" style="margin:10px 0 5px;">Risques</div>
+        <div class="label" style="margin:10px 0 5px;">
+    Risques
+</div>
 
-        {% if version.version_risques.all %}
+        {% if pdf_risques %}
 
             <table class="risk-grid">
-
                 <tr>
 
-                {% for vr in version.version_risques.all %}
+                    {% for risque in pdf_risques %}
 
-                    <td>
+                        <td>
+                            <div class="risk-card">
 
-                        <div class="risk-card">
-
-                            <div class="risk-photo">
-
-                                {% if vr.risque.image_url %}
-
-                                    <img
-                                        src="{{ vr.risque.image_url }}"
-                                        alt="{{ vr.risque.nom }}"
-                                    >
-
-                                {% else %}
-
-                                    <div class="no-photo">
-                                        <span>
-                                            Sans photo
-                                        </span>
-                                    </div>
-
-                                {% endif %}
-
-                            </div>
-
-                            <div class="risk-info">
-
-                                <div class="risk-name">
-                                    {{ vr.risque.nom }}
+                                <div class="risk-photo">
+                                    {% if risque.image_url %}
+                                        <img
+                                            src="{{ risque.image_url }}"
+                                            alt="{{ risque.nom }}"
+                                        >
+                                    {% else %}
+                                        <div class="no-photo">
+                                            Sans image
+                                        </div>
+                                    {% endif %}
                                 </div>
 
-                                {% if vr.risque.description %}
+                                <div class="risk-info">
 
-                                    <div class="risk-description">
-                                        {{ vr.risque.description }}
+                                    <div class="risk-name">
+                                        {{ risque.nom }}
                                     </div>
 
-                                {% endif %}
+                                    {% if risque.description %}
+                                        <div class="risk-description">
+                                            {{ risque.description }}
+                                        </div>
+                                    {% endif %}
+
+                                </div>
 
                             </div>
+                        </td>
 
-                        </div>
+                        {% if forloop.counter|divisibleby:4 and not forloop.last %}
+                            </tr><tr>
+                        {% endif %}
 
-                    </td>
-
-                    {% if forloop.counter|divisibleby:2 and not forloop.last %}
-                        </tr><tr>
-                    {% endif %}
-
-                {% empty %}
-
-                    <td colspan="2">
-
-                        <div class="empty">
-                            Aucun risque associé.
-                        </div>
-
-                    </td>
-
-                {% endfor %}
+                    {% endfor %}
 
                 </tr>
-
             </table>
 
         {% else %}
@@ -1329,30 +1577,34 @@
 
         {% endif %}
 
-    </div>
+            </div>
 
-</div>
+        </div>
 
 
 <!-- ============================================================ -->
-<!-- 6. OUTILLAGES -->
+<!-- 8. OUTILLAGES -->
+<!-- ============================================================ -->
+
+<!-- ============================================================ -->
+<!-- 7. OUTILLAGES -->
 <!-- ============================================================ -->
 
 <div class="section">
 
     <div class="section-title">
-        6. Outillages et accessoires
+        7. Outillages et accessoires
     </div>
 
     <div class="section-body">
 
-        {% if version.version_outillages.all %}
+        {% if pdf_outillages %}
 
             <table class="tool-grid">
 
                 <tr>
 
-                {% for vo in version.version_outillages.all %}
+                {% for outillage in pdf_outillages %}
 
                     <td>
 
@@ -1360,11 +1612,11 @@
 
                             <div class="tool-photo">
 
-                                {% if vo.outillage.image_url %}
+                                {% if outillage.image_url %}
 
                                     <img
-                                        src="{{ vo.outillage.image_url }}"
-                                        alt="{{ vo.outillage.nom }}"
+                                        src="{{ outillage.image_url }}"
+                                        alt="{{ outillage.nom }}"
                                     >
 
                                 {% else %}
@@ -1382,20 +1634,20 @@
                             <div class="tool-info">
 
                                 <div class="tool-name">
-                                    {{ vo.outillage.nom }}
+                                    {{ outillage.nom }}
                                 </div>
 
-                                {% if vo.outillage.description %}
+                                {% if outillage.description %}
 
                                     <div class="tool-description">
-                                        {{ vo.outillage.description }}
+                                        {{ outillage.description }}
                                     </div>
 
                                 {% endif %}
 
                                 <div class="quantity">
                                     Quantité :
-                                    {{ vo.quantite|default:"1" }}
+                                    {{ outillage.quantite|default:"1" }}
                                 </div>
 
                             </div>
@@ -1438,13 +1690,13 @@
 
 
 <!-- ============================================================ -->
-<!-- 7. PIÈCES DE RECHANGE -->
+<!-- 8. PIÈCES DE RECHANGE -->
 <!-- ============================================================ -->
 
 <div class="section">
 
     <div class="section-title">
-        7. Pièces de rechange
+        8. Pièces de rechange
     </div>
 
     <div class="section-body">
@@ -1565,13 +1817,13 @@
 
 
 <!-- ============================================================ -->
-<!-- 8. ÉTAPES OPÉRATOIRES -->
+<!-- 9. ÉTAPES OPÉRATOIRES -->
 <!-- ============================================================ -->
 
 <div class="section page-break">
 
     <div class="section-title">
-        8. Liste des actions et étapes opératoires
+        9. Liste des actions et étapes opératoires
     </div>
 
     <div class="section-body">
@@ -1706,13 +1958,13 @@
 
 
 <!-- ============================================================ -->
-<!-- 9. RECOMMANDATIONS -->
+<!-- 10. RECOMMANDATIONS -->
 <!-- ============================================================ -->
 
 <div class="section">
 
     <div class="section-title">
-        9. Recommandations particulières / Informations
+        10. Recommandations particulières / Informations
     </div>
 
     <div class="section-body">
@@ -1749,13 +2001,13 @@
 
 
 <!-- ============================================================ -->
-<!-- 10. DOCUMENTS LIÉS -->
+<!-- 11. DOCUMENTS LIÉS -->
 <!-- ============================================================ -->
 
 <div class="section">
 
     <div class="section-title">
-        10. Documents liés
+        11. Documents liés
     </div>
 
     <div class="section-body">
@@ -1804,158 +2056,6 @@
             </div>
 
         {% endfor %}
-
-    </div>
-
-</div>
-
-
-<!-- ============================================================ -->
-<!-- 11. HISTORIQUE -->
-<!-- ============================================================ -->
-
-<div class="section">
-
-    <div class="section-title">
-        11. Historique de la version
-    </div>
-
-    <div class="section-body">
-
-        <table class="history-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        Version
-                    </th>
-
-                    <th>
-                        Date
-                    </th>
-
-                    <th>
-                        Rédacteur
-                    </th>
-
-                    <th>
-                        Valideur
-                    </th>
-
-                    <th>
-                        Modification
-                    </th>
-
-                    <th>
-                        Statut
-                    </th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                <tr>
-
-                    <td>
-                        {{ version.code_version|default:"V0" }}
-                    </td>
-
-                    <td>
-                        {{ version.date_version|date:"d/m/Y" }}
-                    </td>
-
-                    <td>
-                        {{ version.redacteur|default:"-" }}
-                    </td>
-
-                    <td>
-                        {{ version.valideur|default:"-" }}
-                    </td>
-
-                    <td>
-                        {{ version.modifications|default:"-" }}
-                    </td>
-
-                    <td>
-                        {{ statut_label|default:version.statut|default:"-" }}
-                    </td>
-
-                </tr>
-
-            </tbody>
-
-        </table>
-
-    </div>
-
-</div>
-
-
-<!-- ============================================================ -->
-<!-- 12. VALIDATION -->
-<!-- ============================================================ -->
-
-<div class="section">
-
-    <div class="section-title">
-        12. Validation
-    </div>
-
-    <div class="section-body">
-
-        <table class="signature-table">
-
-            <thead>
-
-                <tr>
-
-                    <th>
-                        Rédacteur
-                    </th>
-
-                    <th>
-                        Valideur
-                    </th>
-
-                    <th>
-                        Date
-                    </th>
-
-                </tr>
-
-            </thead>
-
-            <tbody>
-
-                <tr>
-
-                    <td class="signature-space">
-
-                        {{ version.redacteur|default:"" }}
-
-                    </td>
-
-                    <td class="signature-space">
-
-                        {{ version.valideur|default:"" }}
-
-                    </td>
-
-                    <td class="signature-space">
-
-                        {{ version.date_version|date:"d/m/Y" }}
-
-                    </td>
-
-                </tr>
-
-            </tbody>
-
-        </table>
 
     </div>
 

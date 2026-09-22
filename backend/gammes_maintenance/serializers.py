@@ -52,6 +52,7 @@ from .models import (
     QRCodeGamme,
     FichierGenere,
     Media,
+    Entreprise,
 )
 
 
@@ -767,3 +768,40 @@ class GammeVersionSerializer(serializers.ModelSerializer):
     class Meta:
         model = GammeVersion
         fields = "__all__"
+    # ============================================================
+# ENTREPRISES / LOGOS
+# ============================================================
+# Serializer utilisé par l'API pour convertir les entreprises
+# entre les objets Django et les données JSON.
+#
+# Il permettra notamment :
+# - d'afficher la liste des entreprises ;
+# - d'ajouter une entreprise ;
+# - de modifier une entreprise ;
+# - de supprimer une entreprise ;
+# - de récupérer le nom et le logo pour les gammes.
+# ============================================================
+
+class EntrepriseSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        # Modèle associé à la table Supabase "entreprises".
+        model = Entreprise
+
+        # Champs exposés par l'API.
+        fields = [
+            "id",
+            "nom",
+            "logo_url",
+            "actif",
+            "created_at",
+            "updated_at",
+        ]
+
+        # Ces champs sont générés automatiquement par la base
+        # et ne doivent pas être saisis depuis le frontend.
+        read_only_fields = [
+            "id",
+            "created_at",
+            "updated_at",
+        ]

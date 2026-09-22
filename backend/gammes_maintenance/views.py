@@ -37,6 +37,7 @@ from .models import (
     QRCodeGamme,
     FichierGenere,
     Media,
+    Entreprise,
 )
 
 from .serializers import (
@@ -59,6 +60,7 @@ from .serializers import (
     QRCodeGammeSerializer,
     FichierGenereSerializer,
     MediaSerializer,
+    EntrepriseSerializer,
 )
 
 from .permissions import (
@@ -510,7 +512,7 @@ class GammeOperatoireViewSet(BaseModelViewSet):
             code_version="V0",
             date_version=timezone.localdate(),
             redacteur=get_user_display_name(self.request.user),
-            statut="brouillon",
+            statut="en_cours_creation",
         )
 
     @action(
@@ -644,7 +646,7 @@ class GammeVersionViewSet(BaseModelViewSet):
             code_version=f"V{next_number}",
             date_version=timezone.localdate(),
             redacteur=get_user_display_name(self.request.user),
-            statut="brouillon",
+            statut="en_cours_modification",
         )
 
     def update(
@@ -687,12 +689,16 @@ class GammeVersionViewSet(BaseModelViewSet):
 
         version = self.get_object()
 
-        if version.statut != "brouillon":
+        if version.statut not in {
+            "en_cours_creation",
+            "en_cours_modification",
+        }:
 
             return Response(
                 {
                     "detail": (
-                        "Seul un brouillon peut être supprimé."
+                        "Seule une version en cours de création "
+                        "ou de modification peut être supprimée."
                     )
                 },
                 status=status.HTTP_409_CONFLICT,
@@ -745,16 +751,21 @@ class GammeVersionViewSet(BaseModelViewSet):
         request,
         pk=None,
     ):
+        "Seule une version en cours de création "
+        "ou de modification peut être envoyée en validation."
 
         version = self.get_object()
 
-        if version.statut != "brouillon":
+        if version.statut not in {
+            "en_cours_creation",
+            "en_cours_modification",
+        }:
 
             return Response(
                 {
                     "detail": (
-                        "Seul un brouillon peut être "
-                        "envoyé en validation."
+                        "Seule une version en cours de création "
+                        "ou de modification peut être envoyée en validation."
                     )
                 },
                 status=status.HTTP_409_CONFLICT,
@@ -927,6 +938,28 @@ class GammeVersionViewSet(BaseModelViewSet):
     ):
 
         version = self.get_object()
+        # Le téléchargement du PDF final valide la gamme
+        if version.statut not in {"validee", "archivee"}:
+            # Archiver l'ancienne version validée de cette gamme
+            version.gamme.versions.filter(
+                statut="validee"
+            ).exclude(
+                pk=version.pk
+            ).update(
+                statut="archivee",
+                updated_at=timezone.now(),
+            ) 
+            version.statut = "validee"
+            version.valideur = get_user_display_name(request.user)
+            version.updated_at = timezone.now()
+
+            version.save(
+                update_fields=[
+                    "statut",
+                    "valideur",
+                    "updated_at",
+                ]
+            )
 
         try:
             data, filename = generate_pdf(version)
@@ -1542,3 +1575,30 @@ def me(request):
             },
             status=status.HTTP_200_OK,
         )
+    # ============================================================
+# ENTREPRISES / LOGOS
+# ============================================================
+# API CRUD permettant de gérer les entreprises utilisées
+# dans les gammes opératoires.
+#
+# Endpoints disponibles après ajout dans urls.py :
+# GET    /api/entreprises/       -> liste
+# POST   /api/entreprises/       -> ajout
+# GET    /api/entreprises/{id}/  -> détail
+# PATCH  /api/entreprises/{id}/  -> modification
+# DELETE /api/entreprises/{id}/  -> suppression
+# ============================================================
+
+class EntrepriseViewSet(viewsets.ModelViewSet):
+
+    # Toutes les entreprises, classées par nom.
+    queryset = Entreprise.objects.all().order_by("nom")
+
+    # Serializer utilisé pour les entrées/sorties JSON.
+    serializer_class = EntrepriseSerializer
+
+    # Permet la recherche par nom depuis le frontend.
+    search_fields = ["nom"]
+
+    # Permet de filtrer les entreprises actives/inactives.
+    filterset_fields = ["actif"]

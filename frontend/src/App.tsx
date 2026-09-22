@@ -32,13 +32,18 @@ import DashboardPage from "./pages/dashboard/DashboardPage";
 import EquipementsPage from "./pages/equipements/Equipements";
 
 /* ============================================================
+   ENTREPRISES / LOGOS
+   ============================================================ */
+
+import EntreprisesPage from "./pages/Entreprises/Entreprises";
+
+/* ============================================================
    GAMMES
    ============================================================ */
 
 import GammesList from "./pages/gammes/GammesList";
 import GammeCreate from "./pages/gammes/GammeCreate";
 import GammeDetail from "./pages/gammes/GammeDetail";
-import GammeEdit from "./pages/gammes/GammeEdit";
 
 /* ============================================================
    RÉFÉRENTIELS
@@ -191,6 +196,18 @@ export default function App() {
             </ProtectedLayout>
           }
         />
+        {/* ====================================================
+    ENTREPRISES / LOGOS
+    ==================================================== */}
+
+        <Route
+          path="/entreprises"
+          element={
+            <ProtectedLayout>
+              <EntreprisesPage />
+            </ProtectedLayout>
+          }
+      />
 
         {/* ====================================================
             GAMMES
@@ -242,7 +259,7 @@ export default function App() {
           path="/gammes/:id/modifier"
           element={
             <ProtectedLayout>
-              <GammeEdit />
+              <GammeCreate />
             </ProtectedLayout>
           }
         />

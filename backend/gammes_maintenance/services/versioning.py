@@ -137,7 +137,7 @@ def clone_version(
             modifications,
 
         statut=
-            "brouillon",
+            "en_cours_modification",
 
         type_maintenance=
             source.type_maintenance,

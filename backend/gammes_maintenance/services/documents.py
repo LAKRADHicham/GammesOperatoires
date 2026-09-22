@@ -52,9 +52,11 @@ from weasyprint import HTML
 # ============================================================
 
 STATUT_LABELS = {
+    "en_cours_creation": "En cours de création",
+    "en_cours_modification": "En cours de modification",
     "en_validation": "En cours de validation",
     "validee": "Validée",
-    "archivee": "Archivé",
+    "archivee": "Archivée",
 }
 
 
@@ -554,6 +556,71 @@ def prepare_pdf_images(version):
     except Exception:
         pass
 
+def get_pdf_epis(version):
+    """
+    Prépare les EPI pour le PDF avec leurs images embarquées.
+    """
+    result = []
+
+    try:
+        associations = (
+            version.version_epis
+            .select_related("epi")
+            .all()
+        )
+
+        for association in associations:
+            epi = association.epi
+
+            if epi is None:
+                continue
+
+            result.append({
+                "id": epi.id,
+                "nom": epi.nom,
+                "description": getattr(epi, "description", "") or "",
+                "image_url": image_data_url(
+                    getattr(epi, "image_url", None)
+                ),
+            })
+
+    except Exception:
+        return []
+
+    return result
+
+def get_pdf_risques(version):
+    """
+    Prépare les risques pour le PDF avec leurs images embarquées.
+    """
+    result = []
+
+    try:
+        associations = (
+            version.version_risques
+            .select_related("risque")
+            .all()
+        )
+
+        for association in associations:
+            risque = association.risque
+
+            if risque is None:
+                continue
+
+            result.append({
+                "id": risque.id,
+                "nom": risque.nom,
+                "description": getattr(risque, "description", "") or "",
+                "image_url": image_data_url(
+                    getattr(risque, "image_url", None)
+                ),
+            })
+
+    except Exception:
+        return []
+
+    return result
 
 def get_pdf_epcs(version):
     """
@@ -584,6 +651,39 @@ def get_pdf_epcs(version):
         # L'absence de la table V2 ne doit jamais bloquer l'export PDF.
         return []
 
+def get_pdf_outillages(version):
+    """
+    Prépare les outillages pour le PDF avec leurs images embarquées.
+    """
+    result = []
+
+    try:
+        associations = (
+            version.version_outillages
+            .select_related("outillage")
+            .all()
+        )
+
+        for association in associations:
+            outillage = association.outillage
+
+            if outillage is None:
+                continue
+
+            result.append({
+                "id": outillage.id,
+                "nom": outillage.nom,
+                "description": getattr(outillage, "description", "") or "",
+                "image_url": image_data_url(
+                    getattr(outillage, "image_url", None)
+                ),
+                "quantite": getattr(association, "quantite", 1) or 1,
+            })
+
+    except Exception:
+        return []
+
+    return result
 
 # ============================================================
 # PDF
@@ -617,13 +717,17 @@ def generate_pdf(version):
         qr_data_url = None
 
     context = {
-        "version": version,
-        "statut_label": get_statut_label(version),
-        "type_maintenance_label": get_type_maintenance_label(version),
-        "qr_data_url": qr_data_url,
-        "qr_url": qr_url,
-        "pdf_epcs": get_pdf_epcs(version),
-    }
+    "version": version,
+    "statut_label": get_statut_label(version),
+    "type_maintenance_label": get_type_maintenance_label(version),
+    "qr_data_url": qr_data_url,
+    "qr_url": qr_url,
+
+    "pdf_epis": get_pdf_epis(version),
+    "pdf_epcs": get_pdf_epcs(version),
+    "pdf_risques": get_pdf_risques(version),
+    "pdf_outillages": get_pdf_outillages(version),
+}
 
     # Chargement normal via Django. Si le dossier global templates n'est
     # pas encore déclaré dans settings.py, on utilise directement le

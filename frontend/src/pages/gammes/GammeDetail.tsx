@@ -70,11 +70,27 @@ function display(value: unknown): string {
 
 function statusLabel(status?: string) {
   switch (status) {
-    case "brouillon": return "En cours de création";
-    case "en_validation": return "En cours de validation";
-    case "validee": return "Validée";
-    case "archivee": return "Archivée";
-    default: return display(status);
+    case "en_cours_creation":
+      return "En cours de création";
+
+    case "en_cours_modification":
+      return "En cours de modification";
+
+    case "en_validation":
+      return "En cours de validation";
+
+    case "validee":
+      return "Validée";
+
+    case "archivee":
+      return "Archivée";
+
+    // Compatibilité avec les anciennes versions
+    case "brouillon":
+      return "En cours de création";
+
+    default:
+      return display(status);
   }
 }
 
@@ -274,7 +290,11 @@ export default function GammeDetail() {
         </div>
 
         <div className="gd-header-actions">
-          {selectedVersion?.statut === "brouillon" && (
+          {(
+            selectedVersion?.statut === "en_cours_creation" ||
+            selectedVersion?.statut === "en_cours_modification" ||
+            selectedVersion?.statut === "brouillon"
+          ) && (
             <button type="button" className="gd-primary" disabled={Boolean(busy)} onClick={() => void runVersionAction("submit")}>
               <Send size={17} /> Envoyer en validation
             </button>
