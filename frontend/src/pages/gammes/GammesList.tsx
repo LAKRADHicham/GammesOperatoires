@@ -6,6 +6,7 @@ import {
   Pencil,
   Plus,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 
 import api from "../../api/axios";
@@ -91,6 +92,8 @@ export default function GammesList() {
   const [error, setError] = useState("");
 
   const [downloadingId, setDownloadingId] =
+    useState<string | null>(null);
+  const [deletingId, setDeletingId] =
     useState<string | null>(null);
 
 
@@ -291,6 +294,38 @@ export default function GammesList() {
       );
     } finally {
       setDownloadingId(null);
+    }
+  };
+
+
+  // ============================================================
+  // SUPPRIMER UNE GAMME
+  // ============================================================
+
+  const handleDelete = async (gamme: Gamme) => {
+    if (deletingId !== null || downloadingId !== null) return;
+
+    if (!window.confirm(
+      `Supprimer définitivement la gamme « ${gamme.code} » ? Cette action est irréversible.`
+    )) return;
+
+    setDeletingId(gamme.id);
+    setError("");
+
+    try {
+      await api.delete(`/gammes/${encodeURIComponent(gamme.id)}/`);
+      setGammes((current) => current.filter((item) => item.id !== gamme.id));
+    } catch (err: any) {
+      console.error("Erreur suppression gamme :", err);
+      const data = err?.response?.data;
+      const reason = typeof data === "string"
+        ? data
+        : typeof data?.detail === "string"
+          ? data.detail
+          : "Vérifiez que l'API autorise la suppression.";
+      setError(`Impossible de supprimer la gamme ${gamme.code}. ${reason}`);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -867,6 +902,29 @@ export default function GammesList() {
 
                             )}
 
+                          </button>
+
+
+                          {/* SUPPRIMER */}
+                          <button
+                            type="button"
+                            title="Supprimer la gamme"
+                            aria-label={`Supprimer la gamme ${gamme.code}`}
+                            disabled={deletingId !== null || downloadingId !== null}
+                            onClick={() => void handleDelete(gamme)}
+                            style={{
+                              ...actionButtonStyle,
+                              color: "#B42318",
+                              background: "#FFF5F5",
+                              opacity: deletingId !== null ? 0.5 : 1,
+                              cursor: deletingId !== null ? "not-allowed" : "pointer",
+                            }}
+                          >
+                            {deletingId === gamme.id ? (
+                              <RefreshCw size={16} />
+                            ) : (
+                              <Trash2 size={17} />
+                            )}
                           </button>
 
                         </div>

@@ -121,10 +121,18 @@ def get_user_display_name(user):
 # ============================================================
 
 class BaseModelViewSet(viewsets.ModelViewSet):
+    permission_classes = [RoleBasedModelPermission]
 
-    permission_classes = [
-        RoleBasedModelPermission
-    ]
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        version_id = self.request.query_params.get("version")
+
+        if version_id and any(
+            field.name == "version" for field in queryset.model._meta.fields
+        ):
+            return queryset.filter(version_id=version_id)
+
+        return queryset
 
 
 # ============================================================
@@ -179,8 +187,23 @@ class EPIViewSet(BaseModelViewSet):
 # ============================================================
 # VERSION - EPI
 # ============================================================
+class VersionAssociationCleanupMixin:
+    @action(detail=False, methods=["delete"], url_path="for-version")
+    def for_version(self, request):
+        version_id = request.query_params.get("version")
+        if not version_id:
+            return Response({"detail": "version est obligatoire."}, status=400)
 
-class VersionEPIViewSet(BaseModelViewSet):
+        version = GammeVersion.objects.filter(pk=version_id).first()
+        if version is None:
+            return Response({"detail": "Version introuvable."}, status=404)
+        if version.statut in {"validee", "archivee"}:
+            return Response({"detail": "Version non modifiable."}, status=409)
+
+        self.get_queryset().filter(version_id=version_id).delete()
+        return Response(status=204)
+    
+class VersionEPIViewSet(VersionAssociationCleanupMixin, BaseModelViewSet):
 
     queryset = VersionEPI.objects.select_related(
         "epi",
@@ -369,7 +392,7 @@ class EtapeImageViewSet(BaseModelViewSet):
 # VERSION - RISQUES
 # ============================================================
 
-class VersionRisqueViewSet(BaseModelViewSet):
+class VersionRisqueViewSet(VersionAssociationCleanupMixin, BaseModelViewSet):
 
     queryset = VersionRisque.objects.select_related(
         "risque",
@@ -383,7 +406,7 @@ class VersionRisqueViewSet(BaseModelViewSet):
 # VERSION - OUTILLAGES
 # ============================================================
 
-class VersionOutillageViewSet(BaseModelViewSet):
+class VersionOutillageViewSet(VersionAssociationCleanupMixin, BaseModelViewSet):
 
     queryset = VersionOutillage.objects.select_related(
         "outillage",
@@ -397,7 +420,7 @@ class VersionOutillageViewSet(BaseModelViewSet):
 # VERSION - PIECES
 # ============================================================
 
-class VersionPieceRechangeViewSet(BaseModelViewSet):
+class VersionPieceRechangeViewSet(VersionAssociationCleanupMixin, BaseModelViewSet):
 
     queryset = VersionPieceRechange.objects.select_related(
         "piece",

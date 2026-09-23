@@ -686,6 +686,34 @@
             word-break: break-all;
             margin-top: 2px;
         }
+        .document-image {
+            margin-top: 6px;
+            text-align: center;
+        }
+
+        .document-image {
+            width: 100%;
+            text-align: center;
+            margin-top: 4mm;
+            margin-bottom: 4mm;
+            page-break-inside: avoid;
+        }
+
+        .document-image img {
+            display: block;
+            width: auto;
+            height: auto;
+
+            max-width: 150mm;
+            max-height: 120mm;
+
+            margin: 0 auto;
+            object-fit: contain;
+        }
+        .document-link {
+            font-size: 7.5px;
+            margin-top: 4px;
+        }
 
         .history-table {
             width: 100%;
@@ -2039,14 +2067,81 @@
 
                 {% endif %}
 
-                {% if document.fichier_url %}
 
-                    <div class="document-url">
-                        {{ document.fichier_url }}
-                    </div>
+        {% if document.fichier_url %}
 
-                {% endif %}
+    {% with fichier=document.fichier_url %}
 
+        {# IMAGE EN BASE64 #}
+        {% if fichier|slice:":11" == "data:image/" %}
+
+            <div class="document-image">
+                <img
+                    src="{{ fichier }}"
+                    alt="{{ document.titre|default:'Image liée' }}"
+                >
+            </div>
+
+        {# AUTRE FICHIER EN BASE64 : PDF, WORD, ETC. #}
+        {% elif fichier|slice:":5" == "data:" %}
+
+            <div class="document-reference">
+                Document joint : {{ document.titre }}
+            </div>
+
+        {# IMAGE PNG PAR URL #}
+        {% elif fichier|lower|slice:"-4:" == ".png" %}
+
+            <div class="document-image">
+                <img
+                    src="{{ fichier }}"
+                    alt="{{ document.titre|default:'Image liée' }}"
+                >
+            </div>
+
+        {# IMAGE JPG PAR URL #}
+        {% elif fichier|lower|slice:"-4:" == ".jpg" %}
+
+            <div class="document-image">
+                <img
+                    src="{{ fichier }}"
+                    alt="{{ document.titre|default:'Image liée' }}"
+                >
+            </div>
+
+        {# IMAGE JPEG PAR URL #}
+        {% elif fichier|lower|slice:"-5:" == ".jpeg" %}
+
+            <div class="document-image">
+                <img
+                    src="{{ fichier }}"
+                    alt="{{ document.titre|default:'Image liée' }}"
+                >
+            </div>
+
+        {# PDF PAR URL #}
+        {% elif fichier|lower|slice:"-4:" == ".pdf" %}
+
+            <div class="document-link">
+                <a href="{{ fichier }}">
+                    Consulter le PDF
+                </a>
+            </div>
+
+        {# WORD / EXCEL / AUTRES DOCUMENTS #}
+        {% else %}
+
+            <div class="document-link">
+                <a href="{{ fichier }}">
+                    Consulter / télécharger le document
+                </a>
+            </div>
+
+        {% endif %}
+
+    {% endwith %}
+
+{% endif %}
             </div>
 
         {% empty %}

@@ -1,3 +1,5 @@
+from ensurepip import version
+
 from django.db import connection, transaction
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -248,6 +250,25 @@ class EPCDetailAPIView(APIView):
 class VersionEPCListCreateAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
+    def get(self, request):
+        version = request.query_params.get("version")
+        if not version:
+            return Response(
+                {"detail": "Le paramètre version est obligatoire."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                SELECT version_id AS version, epc_id AS epc
+                FROM version_epcs
+                WHERE version_id = %s
+                """,
+                [version],
+            )
+            return Response(dictfetchall(cursor))
+
     def post(self, request):
         version = request.data.get("version")
         epc = request.data.get("epc")
@@ -269,6 +290,31 @@ class VersionEPCListCreateAPIView(APIView):
 
         return Response({"version": version, "epc": epc}, status=201)
 
+class VersionEPCDetailAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, association_id):
+        version = request.query_params.get("version")
+        if not version:
+            return Response(
+            {"detail": "Le paramètre version est obligatoire."},
+            status=400,
+        )
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                DELETE FROM version_epcs
+                WHERE version_id = %s AND epc_id = %s
+                RETURNING epc_id
+                """,
+                [version, association_id],
+            )
+            deleted = cursor.fetchone()
+
+        if deleted is None:
+            return Response({"detail": "Association introuvable."}, status=404)
+        return Response(status=204)
 
 class VersionMetadataAPIView(APIView):
     permission_classes = [IsAuthenticated]

@@ -291,6 +291,7 @@ def generate_pdf(version):
         },
     )
 
+
     pdf_data = HTML(
         string=html,
         base_url=str(settings.BASE_DIR),

@@ -356,7 +356,8 @@ export default function GammeCreate() {
   const [createdVersionId, setCreatedVersionId] = useState<string | null>(null);
   const [createdCode, setCreatedCode] = useState("");
   const [editDataLoaded, setEditDataLoaded] = useState(false);
-  const [editVersionPrepared, setEditVersionPrepared] = useState(false);
+  const [editingVersionId, setEditingVersionId] = useState<string | null>(null);
+  const [, setEditVersionPrepared] = useState(false);
   const [exporting, setExporting] = useState<"pdf" | "word" | null>(null);
 
   /**
@@ -745,15 +746,33 @@ setEtapes(
 
       // 5. Mémoriser la gamme/version actuellement modifiée
       // Mémoriser la gamme/version actuellement modifiée
-    setCreatedGammeId(String(id));
-    setCreatedVersionId(String(version.id));
-    setCreatedCode(gamme.code ?? "");
+  setEditingVersionId(String(version.id));
+  setCreatedCode(gamme.code ?? "");
 
     // Si la dernière version est déjà une version de modification,
     // on la réutilise directement sans créer un nouveau clone.
     setEditVersionPrepared(
-      version.statut === "en_cours_modification",
-    );
+      version.statut !== "validee" &&
+      version.statut !== "archivee"    );
+
+    // Si la version actuelle est validée ou archivée,
+// créer automatiquement une nouvelle version de modification.
+if (
+  version.statut === "validee" ||
+  version.statut === "archivee"
+) {
+  const cloneResponse = await api.post<GammeVersion>(
+    `/versions/${version.id}/clone/`,
+    {
+      modifications: "Modification de la gamme",
+    },
+  );
+
+  const clonedVersion = cloneResponse.data;
+
+  setEditingVersionId(String(clonedVersion.id));
+  setEditVersionPrepared(true);
+}
 
     setEditDataLoaded(true);
     } catch (err: any) {
@@ -1248,62 +1267,64 @@ void removeRecommandation;
 
   setSaveStage(currentSaveStage);
 
-  let version: GammeVersion;
+let version: GammeVersion;
 
-  if (isEditMode && createdVersionId) {
-      console.log("DEBUG MODIFICATION VERSION", {
-        createdVersionId,
-        editVersionPrepared,
-        isEditMode,
-      });
-      if (!editVersionPrepared) {
-    // Premier enregistrement :
-    // créer une nouvelle version de modification à partir de la version source.
-    const cloneResponse = await api.post(
-      `/versions/${createdVersionId}/clone/`,
-      {
-        modifications:
-          form.modifications.trim() || "Modification de la gamme",
-      },
+if (isEditMode) {
+  if (!editingVersionId) {
+    throw new Error(
+      "La version de modification n'est pas encore prête."
+    );
+  }
+
+  const currentResponse = await api.get<GammeVersion>(
+    `/versions/${editingVersionId}/`
+  );
+  let currentVersion = currentResponse.data;
+
+  if (
+    currentVersion.statut === "validee" ||
+    currentVersion.statut === "archivee"
+  ) {
+    const cloneResponse = await api.post<GammeVersion>(
+      `/versions/${currentVersion.id}/clone/`,
+      { modifications: "Modification de la gamme" }
     );
 
-    version = cloneResponse.data;
+    currentVersion = cloneResponse.data;
 
-    // À partir de maintenant, cette nouvelle version devient
-    // la version de travail utilisée pour les sauvegardes suivantes.
-    setCreatedVersionId(String(version.id));
-    setEditVersionPrepared(true);
-  } else {
-    // La version de modification existe déjà :
-    // ne surtout pas la cloner une deuxième fois.
-    version = {
-      id: createdVersionId,
-      statut: "en_cours_modification",
-    };
+    if (!currentVersion?.id || currentVersion.id === editingVersionId) {
+      throw new Error(
+        "Le clonage n'a pas renvoyé une nouvelle version modifiable."
+      );
+    }
+
+    setEditingVersionId(String(currentVersion.id));
   }
+
+  version = currentVersion;
 } else {
-      const versionsResponse = await api.get<
-        GammeVersion[] | PaginatedResponse<GammeVersion>
-      >(`/gammes/${gammeId}/versions/`);
+  const versionsResponse = await api.get<
+    GammeVersion[] | PaginatedResponse<GammeVersion>
+  >(`/gammes/${gammeId}/versions/`);
 
-      const versions = extractResults(versionsResponse.data)
-        .slice()
-        .sort(
-          (a, b) =>
-            Number(b.numero_version ?? 0) -
-            Number(a.numero_version ?? 0),
-        );
+  const versions = extractResults<GammeVersion>(
+    versionsResponse.data
+  )
+    .slice()
+    .sort(
+      (a, b) =>
+        Number(b.numero_version ?? 0) -
+        Number(a.numero_version ?? 0)
+    );
 
-      if (!versions[0]) {
-        throw new Error("La version V0 n'a pas été créée automatiquement.");
-      }
+  if (!versions[0]) {
+    throw new Error(
+      "La version V0 n'a pas été créée automatiquement."
+    );
+  }
 
-      version = versions[0];
-    }
-
-    if (!version?.id) {
-      throw new Error("Impossible de préparer la version de la gamme.");
-    }
+  version = versions[0];
+}
 
         currentSaveStage = "Enregistrement des paramètres de maintenance";
         setSaveStage(currentSaveStage);
@@ -1335,40 +1356,28 @@ void removeRecommandation;
         });
 
         if (isEditMode) {
-    currentSaveStage = "Nettoyage des associations de la version modifiée";
-    setSaveStage(currentSaveStage);
+          currentSaveStage = "Nettoyage des associations de la version modifiée";
+          setSaveStage(currentSaveStage);
 
-    const [
-      existingEpis,
-      existingEpcs,
-      existingRisques,
-      existingOutillages,
-    ] = await Promise.all([
-      api.get("/version-epis/", { params: { version: version.id } }),
-      api.get("/v2/version-epcs/", { params: { version: version.id } }),
-      api.get("/version-risques/", { params: { version: version.id } }),
-      api.get("/version-outillages/", { params: { version: version.id } }),
-    ]);
+          await api.delete("/version-epis/for-version/", {
+            params: { version: version.id },
+          });
+          await api.delete("/version-risques/for-version/", {
+            params: { version: version.id },
+          });
+          await api.delete("/version-outillages/for-version/", {
+            params: { version: version.id },
+          });
 
-    const associations = [
-      ...extractResults<any>(existingEpis.data).map((item) => ({
-        url: `/version-epis/${item.id}/`,
-      })),
-      ...extractResults<any>(existingEpcs.data).map((item) => ({
-        url: `/v2/version-epcs/${item.id}/`,
-      })),
-      ...extractResults<any>(existingRisques.data).map((item) => ({
-        url: `/version-risques/${item.id}/`,
-      })),
-      ...extractResults<any>(existingOutillages.data).map((item) => ({
-        url: `/version-outillages/${item.id}/`,
-      })),
-    ];
-
-    for (const association of associations) {
-      await api.delete(association.url);
-    }
-  }
+          const existingEpcs = await api.get("/v2/version-epcs/", {
+            params: { version: version.id },
+          });
+          for (const item of extractResults<any>(existingEpcs.data)) {
+            await api.delete(`/v2/version-epcs/${item.epc}/`, {
+              params: { version: version.id },
+            });
+          }
+        }
 
         currentSaveStage = "Association des EPI";
         setSaveStage(currentSaveStage);
@@ -1413,21 +1422,13 @@ void removeRecommandation;
 
 
       if (isEditMode) {
-  currentSaveStage = "Synchronisation des pièces existantes";
-  setSaveStage(currentSaveStage);
+          currentSaveStage = "Synchronisation des pièces existantes";
+          setSaveStage(currentSaveStage);
 
-  const existingPiecesResponse = await api.get("/version-pieces/", {
-    params: { version: version.id },
-  });
-
-  const existingPieces = extractResults<any>(
-    existingPiecesResponse.data,
-  );
-
-  for (const existingPiece of existingPieces) {
-    await api.delete(`/version-pieces/${existingPiece.id}/`);
-  }
-}
+          await api.delete("/version-pieces/for-version/", {
+            params: { version: version.id },
+          });
+        }
 
       currentSaveStage = "Enregistrement des pièces de rechange";
       setSaveStage(currentSaveStage);
@@ -2734,4 +2735,4 @@ function ReviewItem({ label, value }: { label: string; value: string }) {
       <strong>{value}</strong>
     </div>
   );
-}
+} 

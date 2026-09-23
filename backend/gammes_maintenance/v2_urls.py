@@ -9,6 +9,7 @@ from .v2_api import (
     ReferentielValeursAPIView,
     VersionEPCListCreateAPIView,
     VersionMetadataAPIView,
+    VersionEPCDetailAPIView,
 )
 
 urlpatterns = [
@@ -35,6 +36,11 @@ urlpatterns = [
         name="v2-version-epcs",
     ),
     path(
+        "version-epcs/<uuid:association_id>/",
+        VersionEPCDetailAPIView.as_view(),
+        name="v2-version-epc-detail",
+    ),
+        path(
         "versions/<uuid:version_id>/metadata/",
         VersionMetadataAPIView.as_view(),
         name="v2-version-metadata",
